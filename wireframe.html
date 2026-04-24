@@ -305,6 +305,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
     <div class="sidebar-item" onclick="go('s-register',this)"><span>📝</span>Register<span class="badge">MOB-02</span></div>
     <div class="sidebar-item" onclick="go('s-login',this)"><span>🔑</span>Login<span class="badge">MOB-03</span></div>
     <div class="sidebar-item" onclick="go('s-forgot',this)"><span>✉️</span>Forgot Password<span class="badge">FR-05</span></div>
+    <div class="sidebar-item" onclick="go('s-reset-password',this)"><span>🔑</span>Reset Password<span class="badge">FR-05</span></div>
   </div>
 
   <hr class="sidebar-divider">
@@ -349,7 +350,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 <main class="canvas">
   <div class="canvas-header">
     <h1>AI Pet Health Monitor &amp; Vet Telemedicine</h1>
-    <p>Interactive wireframe v4 · 17 mobile screens + 4 admin screens · All buttons clickable · Biometric + analytics + activity feed</p>
+    <p>Interactive wireframe v4 · 18 mobile screens + 4 admin screens · All buttons clickable · Full auth + reset-password flow · Biometric + analytics + activity feed</p>
   </div>
 
   <!-- ── MOBILE VIEW ── -->
@@ -441,6 +442,23 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
             <div style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.65;">Enter your email and we will send you a reset link. The link expires after 30 minutes.</div>
             <label class="label">Email address</label><input class="input" value="priya@example.com" readonly>
             <button class="btn-primary" onclick="forgotSent()">Send reset link</button>
+            <a class="link" onclick="gs('s-login')">Back to log in</a>
+          </div>
+        </div>
+
+        <!-- RESET PASSWORD -->
+        <div class="phone-screen screen" id="s-reset-password">
+          <div class="status-bar" style="background:#fff;color:#111;border-bottom:1px solid var(--border);"><span>9:41</span><span>▲▲ 🔋</span></div>
+          <div class="nav-header"><div class="nav-back" onclick="gs('s-forgot')">←</div><div class="nav-title">Set new password</div></div>
+          <div class="scroll-area" id="reset-body" style="display:flex;flex-direction:column;justify-content:center;">
+            <div style="text-align:center;font-size:44px;margin-bottom:14px;">🔐</div>
+            <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px;">Choose a new password</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.65;">Enter the token from your email and a new password (min. 8 characters).</div>
+            <label class="label">Reset token (from email)</label>
+            <input class="input" value="a7f2Kx9mNpQr3sYt…" readonly style="font-family:monospace;font-size:12px;color:#6B7280;">
+            <label class="label">New password</label><input class="input" value="••••••••••" readonly>
+            <label class="label">Confirm password</label><input class="input" value="••••••••••" readonly>
+            <button class="btn-primary" onclick="resetPasswordSuccess()">Reset password</button>
             <a class="link" onclick="gs('s-login')">Back to log in</a>
           </div>
         </div>
@@ -670,7 +688,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
         </div>
 
         <!-- VET CALL -->
-        <div class="phone-screen screen" id="s-vetcall" style="background:#111827;">
+        <div class="phone-screen screen" id="s-vetcall" style="background:#111827;" onclick="startCallOnce()">
           <div class="status-bar" style="background:#111827;color:#fff;"><span>9:41</span><span>▲▲ 🔋</span></div>
           <div class="call-remote">
             <div class="call-avatar">👩‍⚕️</div>
@@ -734,7 +752,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
               <div class="history-right"><div class="history-conf">68%</div><div class="history-conf-label">confidence</div></div>
               <div class="history-chevron">›</div>
             </div>
-            <div class="history-item">
+            <div class="history-item" onclick="gs('s-fallback')">
               <div class="history-badge" style="background:#6B7280;"><div class="history-badge-icon">?</div><div class="history-badge-text">FALLBACK</div></div>
               <div class="history-info"><div class="history-pet">Bruno</div><div class="history-date">02 Apr 2026 · 6:20 PM</div><div style="font-size:10px;color:var(--muted);margin-top:2px;font-style:italic;">Low confidence — vet recommended</div></div>
               <div class="history-right"><div class="history-conf">42%</div><div class="history-conf-label">confidence</div></div>
@@ -775,28 +793,31 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
           <ul>
             <li><span>FR-04</span>Biometric login (fingerprint / Face ID)</li>
             <li><span>FR-01</span>Register → Reference ID success card</li>
+            <li><span>FR-05</span>Full forgot + reset-password flow ✅</li>
             <li><span>MOB-04</span>Home: bell 🔔 + recent activity feed</li>
+            <li><span>MOB-09</span>Fallback history item now navigable ✅</li>
+            <li><span>MOB-11</span>Call timer resets on re-entry ✅</li>
             <li><span>MOB-11</span>Rating saved to backend via callsAPI</li>
             <li><span>Security</span>All tokens in SecureStore (not AsyncStorage)</li>
-            <li><span>§5.1.4</span>Analytics: 4 events instrumented</li>
             <li><span>§5.1.4</span>Proactive JWT refresh at 45 min</li>
           </ul>
         </div>
         <div class="info-panel">
-          <h3>📱 All 17 mobile screens</h3>
+          <h3>📱 All 18 mobile screens</h3>
           <ul>
             <li><span>MOB-01</span>Onboarding (3 steps)</li>
             <li><span>MOB-02</span>Register + success state ✅</li>
             <li><span>MOB-03</span>Login + biometric enroll ✅</li>
-            <li><span>FR-05</span>Forgot Password</li>
+            <li><span>FR-05</span>Forgot Password (resets ✅)</li>
+            <li><span>FR-05</span>Reset Password + success ✅</li>
             <li><span>MOB-04</span>Home + bell + activity ✅</li>
             <li><span>MOB-05</span>Pet Profile</li>
             <li><span>MOB-06</span>Symptom Input</li>
             <li><span>MOB-07</span>Processing</li>
             <li><span>MOB-08</span>Result ×4 variants</li>
-            <li><span>MOB-09</span>Fallback</li>
+            <li><span>MOB-09</span>Fallback (clickable ✅)</li>
             <li><span>MOB-10</span>Vet Booking</li>
-            <li><span>MOB-11</span>Vet Call + Rating (saves) ✅</li>
+            <li><span>MOB-11</span>Vet Call (timer resets ✅) + Rating</li>
             <li><span>MOB-12</span>Health History</li>
           </ul>
         </div>
@@ -824,7 +845,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
               <div style="font-size:22px;font-weight:700;color:#111827;margin:12px 0 4px;">Sign in</div>
               <div style="font-size:13px;color:#6B7280;margin-bottom:24px;">Admin access required to continue.</div>
               <label class="adm-label">Email address</label>
-              <input class="adm-input" value="admin@uc45.com" readonly>
+              <input class="adm-input" value="admin@aiph.com" readonly>
               <label class="adm-label">Password</label>
               <input class="adm-input" value="••••••••••" readonly>
               <button class="adm-btn-primary" onclick="goAdminScreen('s-admin-dashboard')">Sign in</button>
@@ -838,7 +859,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
           <div class="adm-appbar">
             <div class="adm-appbar-title">AI Pet Health Admin</div>
             <div class="adm-appbar-right">
-              <span class="adm-user">admin@uc45.com</span>
+              <span class="adm-user">admin@aiph.com</span>
               <button class="adm-signout" onclick="goAdminScreen('s-admin-login')">Sign out</button>
             </div>
           </div>
@@ -879,16 +900,19 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
                 <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:14px;">Urgency breakdown (today)</div>
                 <div style="display:flex;align-items:center;gap:20px;">
                   <svg width="110" height="110" viewBox="0 0 120 120" style="flex-shrink:0;">
-                    <!-- EMERGENCY 5/47 ≈ 38° -->
-                    <path d="M60,8 A52,52 0 0,1 108,68 L88,51 A32,32 0 0,0 60,28 Z" fill="#DC2626"/>
-                    <!-- URGENT 12/47 ≈ 92° -->
-                    <path d="M108,68 A52,52 0 0,1 22,98 L37,82 A32,32 0 0,0 88,51 Z" fill="#D97706"/>
-                    <!-- MONITOR 18/47 ≈ 138° -->
-                    <path d="M22,98 A52,52 0 0,1 60,8 L60,28 A32,32 0 0,0 37,82 Z" fill="#2563EB"/>
-                    <!-- SAFE 10/47 -->
-                    <circle cx="60" cy="60" r="32" fill="#fff"/>
-                    <text x="60" y="55" text-anchor="middle" font-size="11" fill="#6B7280">Total</text>
-                    <text x="60" y="72" text-anchor="middle" font-size="19" font-weight="bold" fill="#111827">47</text>
+                    <!-- EMERGENCY 5/47=38.3° start:-90° end:-51.7° -->
+                    <path d="M60,8 A52,52 0 0,1 92,19 L80,35 A32,32 0 0,0 60,28 Z" fill="#DC2626"/>
+                    <!-- URGENT 12/47=91.9° end:40.2° -->
+                    <path d="M92,19 A52,52 0 0,1 100,94 L84,81 A32,32 0 0,0 80,35 Z" fill="#D97706"/>
+                    <!-- MONITOR 18/47=137.9° end:178.1° -->
+                    <path d="M100,94 A52,52 0 0,1 8,62 L28,61 A32,32 0 0,0 84,81 Z" fill="#2563EB"/>
+                    <!-- SAFE 10/47=76.6° end:254.7° -->
+                    <path d="M8,62 A52,52 0 0,1 46,10 L52,29 A32,32 0 0,0 28,61 Z" fill="#16A34A"/>
+                    <!-- UNDETERMINED 2/47=15.3° end:270° -->
+                    <path d="M46,10 A52,52 0 0,1 60,8 L60,28 A32,32 0 0,0 52,29 Z" fill="#6B7280"/>
+                    <circle cx="60" cy="60" r="30" fill="#fff"/>
+                    <text x="60" y="56" text-anchor="middle" font-size="11" fill="#6B7280">Total</text>
+                    <text x="60" y="73" text-anchor="middle" font-size="19" font-weight="bold" fill="#111827">47</text>
                   </svg>
                   <div style="font-size:11px;line-height:1.9;">
                     <div><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#DC2626;margin-right:6px;"></span>EMERGENCY: <strong>5</strong></div>
@@ -950,7 +974,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
           <div class="adm-appbar">
             <div class="adm-appbar-title">AI Pet Health Admin</div>
             <div class="adm-appbar-right">
-              <span class="adm-user">admin@uc45.com</span>
+              <span class="adm-user">admin@aiph.com</span>
               <button class="adm-signout" onclick="goAdminScreen('s-admin-login')">Sign out</button>
             </div>
           </div>
@@ -1025,7 +1049,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
           <div class="adm-appbar">
             <div class="adm-appbar-title">AI Pet Health Admin</div>
             <div class="adm-appbar-right">
-              <span class="adm-user">admin@uc45.com</span>
+              <span class="adm-user">admin@aiph.com</span>
               <button class="adm-signout" onclick="goAdminScreen('s-admin-login')">Sign out</button>
             </div>
           </div>
@@ -1188,6 +1212,7 @@ function go(id, sidebarEl) {
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
   if (sidebarEl) sidebarEl.classList.add('active');
+  resetScreenState(id);
   window.scrollTo({ top:0, behavior:'smooth' });
 }
 function gs(id) {
@@ -1197,7 +1222,9 @@ function gs(id) {
     item.classList.remove('active');
     if ((item.getAttribute('onclick')||'').includes(`'${id}'`)) item.classList.add('active');
   });
-  // Reset screen states on re-entry
+  resetScreenState(id);
+}
+function resetScreenState(id) {
   if (id === 's-login') {
     document.getElementById('login-form').style.display = 'flex';
     document.getElementById('bio-enroll').style.display = 'none';
@@ -1208,9 +1235,41 @@ function gs(id) {
   }
   if (id === 's-rating') {
     currentRating = 0;
-    for(let i=1;i<=5;i++) { const el=document.getElementById('s'+i); if(el) el.classList.remove('on'); }
+    for (let i=1;i<=5;i++) { const el=document.getElementById('s'+i); if(el) el.classList.remove('on'); }
     const rb = document.getElementById('rating-submit-btn');
     if (rb) { rb.textContent = 'Skip'; rb.disabled = false; }
+  }
+  if (id === 's-forgot') {
+    document.getElementById('forgot-body').innerHTML = `
+      <div style="text-align:center;font-size:44px;margin-bottom:14px;">📧</div>
+      <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px;">Reset password</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.65;">Enter your email and we will send you a reset link. The link expires after 30 minutes.</div>
+      <label class="label">Email address</label><input class="input" value="priya@example.com" readonly>
+      <button class="btn-primary" onclick="forgotSent()">Send reset link</button>
+      <a class="link" onclick="gs('s-login')">Back to log in</a>`;
+  }
+  if (id === 's-reset-password') {
+    document.getElementById('reset-body').innerHTML = `
+      <div style="text-align:center;font-size:44px;margin-bottom:14px;">🔐</div>
+      <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px;">Set new password</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.65;">Enter the token from your email and a new password (min. 8 characters).</div>
+      <label class="label">Reset token (from email)</label>
+      <input class="input" value="a7f2Kx9mNpQr3sYt…" readonly style="font-family:monospace;font-size:12px;color:#6B7280;">
+      <label class="label">New password</label><input class="input" value="••••••••••" readonly>
+      <label class="label">Confirm password</label><input class="input" value="••••••••••" readonly>
+      <button class="btn-primary" onclick="resetPasswordSuccess()">Reset password</button>
+      <a class="link" onclick="gs('s-login')">Back to log in</a>`;
+  }
+  if (id === 's-vetcall') {
+    if (callTick) { clearInterval(callTick); callTick = null; }
+    callStarted = false;
+    document.getElementById('call-timer-display').textContent = '00:00';
+    document.getElementById('call-status-text').textContent = 'Connecting via WebRTC…';
+    muted = false; camOff = false;
+    const bm = document.getElementById('btn-mute');
+    if (bm) { bm.textContent = '🎙'; bm.classList.remove('active'); }
+    const bc = document.getElementById('btn-cam');
+    if (bc) { bc.textContent = '📷'; bc.classList.remove('active'); }
   }
 }
 
@@ -1258,7 +1317,21 @@ function forgotSent() {
       <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:26px;">
         If that email is registered, a reset link has been sent. The link expires after 30 minutes.
       </div>
-      <button class="btn-primary" onclick="gs('s-login')">Back to log in</button>
+      <button class="btn-primary" onclick="gs('s-reset-password')" style="margin-bottom:10px;">→ Demo: open reset link</button>
+      <button class="btn-outline" onclick="gs('s-login')">Back to log in</button>
+    </div>`;
+}
+
+// ── Reset password success ─────────────────────────────────────
+function resetPasswordSuccess() {
+  document.getElementById('reset-body').innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 0;">
+      <div style="font-size:50px;margin-bottom:16px;">✅</div>
+      <div style="font-size:19px;font-weight:700;color:var(--text);margin-bottom:10px;">Password updated!</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:26px;">
+        Your password has been reset successfully. You can now log in with your new password.
+      </div>
+      <button class="btn-primary" onclick="gs('s-login')">Log in →</button>
     </div>`;
 }
 
@@ -1286,38 +1359,38 @@ function toggleMod(id) {
 }
 
 // ── Vet call controls ──────────────────────────────────────────
-let muted=false, camOff=false, callTick=null;
-document.getElementById('s-vetcall').addEventListener('click', function handler() {
-  if (!callTick) {
-    let secs=0;
+let muted=false, camOff=false, callTick=null, callStarted=false;
+function startCallOnce() {
+  if (!callStarted) {
+    callStarted = true;
+    let secs = 0;
     callTick = setInterval(() => {
       secs++;
-      const m=String(Math.floor(secs/60)).padStart(2,'0');
-      const s=String(secs%60).padStart(2,'0');
-      document.getElementById('call-timer-display').textContent=`${m}:${s}`;
-      if (secs===3) document.getElementById('call-status-text').textContent='Connected · Dr. Priya Mehta';
-    },1000);
+      const m = String(Math.floor(secs/60)).padStart(2,'0');
+      const s = String(secs%60).padStart(2,'0');
+      document.getElementById('call-timer-display').textContent = `${m}:${s}`;
+      if (secs === 3) document.getElementById('call-status-text').textContent = 'Connected · Dr. Priya Mehta';
+    }, 1000);
   }
-  document.getElementById('s-vetcall').removeEventListener('click',handler);
-});
+}
 function toggleMute() {
-  muted=!muted;
-  const btn=document.getElementById('btn-mute');
-  btn.textContent=muted?'🔇':'🎙';
-  btn.classList.toggle('active',muted);
+  muted = !muted;
+  const btn = document.getElementById('btn-mute');
+  btn.textContent = muted ? '🔇' : '🎙';
+  btn.classList.toggle('active', muted);
 }
 function toggleCam() {
-  camOff=!camOff;
-  const btn=document.getElementById('btn-cam');
-  btn.textContent=camOff?'🚫':'📷';
-  btn.classList.toggle('active',camOff);
+  camOff = !camOff;
+  const btn = document.getElementById('btn-cam');
+  btn.textContent = camOff ? '🚫' : '📷';
+  btn.classList.toggle('active', camOff);
 }
 
 // ── Star rating ────────────────────────────────────────────────
 let currentRating = 0;
 function rateStar(n) {
   currentRating = n;
-  for(let i=1;i<=5;i++) document.getElementById('s'+i).classList.toggle('on',i<=n);
+  for (let i=1;i<=5;i++) document.getElementById('s'+i).classList.toggle('on', i<=n);
   document.getElementById('rating-submit-btn').textContent = 'Submit rating';
 }
 function submitRating() {
@@ -1357,12 +1430,12 @@ function toggleTier(id, color) {
   const el = document.getElementById(id);
   if (el.classList.contains('sel')) {
     el.classList.remove('sel');
-    el.style.background='transparent';
-    el.style.color=color;
+    el.style.background = 'transparent';
+    el.style.color = color;
   } else {
     el.classList.add('sel');
-    el.style.background=color;
-    el.style.color='#fff';
+    el.style.background = color;
+    el.style.color = '#fff';
   }
 }
 
@@ -1372,10 +1445,10 @@ function admSave(btn) {
   btn.textContent = '✓ Saved';
   btn.classList.add('saved');
   const snack = document.getElementById('adm-snack');
-  snack.style.display='block';
+  snack.style.display = 'block';
   setTimeout(() => {
-    btn.textContent=orig; btn.classList.remove('saved');
-    snack.style.display='none';
+    btn.textContent = orig; btn.classList.remove('saved');
+    snack.style.display = 'none';
   }, 2000);
 }
 </script>
