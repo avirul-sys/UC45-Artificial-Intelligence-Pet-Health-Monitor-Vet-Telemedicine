@@ -4,7 +4,7 @@ import { COLORS } from '../constants/colors';
 
 const STEPS = [
   {
-    title: 'Welcome to UC45',
+    title: 'Welcome to AI Pet Health Monitor',
     desc: 'Artificial Intelligence (AI)-powered pet health triage — know in seconds if your pet needs a vet.',
   },
   {

@@ -1,6 +1,6 @@
-# UC45 — Artificial Intelligence Pet Health Monitor & Vet Telemedicine Platform
+# AI Pet Health Monitor & Vet Telemedicine Platform
 
-This is the implementation of UC45 as per the FRS document.
+This is the implementation of the AI Pet Health Monitor & Vet Telemedicine platform as per the FRS document.
 
 ## Architecture
 - **Mobile App**: React Native (Expo) in `mobile/`

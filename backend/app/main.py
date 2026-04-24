@@ -26,14 +26,14 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.create_all)
     # Pre-load breed cache
     await _load_breed_db()
-    logger.info("UC45 API started")
+    logger.info("AI Pet Health Monitor API started")
     yield
     await engine.dispose()
-    logger.info("UC45 API shutdown")
+    logger.info("AI Pet Health Monitor API shutdown")
 
 
 app = FastAPI(
-    title="UC45 Pet Health API",
+    title="AI Pet Health Monitor & Vet Telemedicine API",
     version="1.0.0",
     description="AI-powered pet health triage and vet telemedicine platform",
     lifespan=lifespan,

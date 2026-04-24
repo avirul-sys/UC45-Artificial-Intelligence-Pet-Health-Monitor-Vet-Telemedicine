@@ -90,7 +90,7 @@ function LoginScreen({ onLogin }) {
     <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#F3F4F6' }}>
       <Card sx={{ width: 420, p: 1 }}>
         <CardContent>
-          <Typography variant="h5" fontWeight={700} mb={0.5}>UC45 Admin</Typography>
+          <Typography variant="h5" fontWeight={700} mb={0.5}>AI Pet Health Admin</Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
             Sign in with an admin account to continue.
           </Typography>
@@ -539,7 +539,7 @@ export default function App() {
       <AppBar position="static" elevation={0} sx={{ bgcolor: '#1E293B' }}>
         <Toolbar>
           <Typography variant="h6" fontWeight={700} sx={{ flex: 1, letterSpacing: '-0.3px' }}>
-            UC45 Admin
+            AI Pet Health Admin
           </Typography>
           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.65)', mr: 2 }}>
             {adminUser?.name || adminUser?.email || 'Admin'}

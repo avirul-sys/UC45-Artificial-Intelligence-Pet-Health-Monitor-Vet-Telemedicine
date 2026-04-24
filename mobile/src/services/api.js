@@ -1,15 +1,45 @@
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
-const BASE_URL = 'http://10.0.2.2:8000/api/v1'; // Android emulator; use your IP for physical device
+const BASE_URL = 'http://10.0.2.2:8000/api/v1'; // Android emulator; use device IP for physical device
 
 export const api = axios.create({
   baseURL: BASE_URL,
   timeout: 10000,
 });
 
+// Decode JWT expiry without a library
+function getTokenExpiry(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp * 1000; // ms
+  } catch {
+    return 0;
+  }
+}
+
+// Proactive refresh: silently refresh when < 15 minutes before expiry (FRS §5.1.4)
+async function maybeRefreshProactively() {
+  try {
+    const token = await SecureStore.getItemAsync('access_token');
+    if (!token) return;
+    const expiry = getTokenExpiry(token);
+    const fifteenMin = 15 * 60 * 1000;
+    if (expiry && Date.now() > expiry - fifteenMin) {
+      const refreshToken = await SecureStore.getItemAsync('refresh_token');
+      if (!refreshToken) return;
+      const res = await axios.post(`${BASE_URL}/auth/refresh`, { refresh_token: refreshToken });
+      await SecureStore.setItemAsync('access_token', res.data.access_token);
+      await SecureStore.setItemAsync('refresh_token', res.data.refresh_token);
+    }
+  } catch {
+    // Silent — reactive refresh on 401 is the fallback
+  }
+}
+
 api.interceptors.request.use(async (config) => {
-  const token = await AsyncStorage.getItem('access_token');
+  await maybeRefreshProactively();
+  const token = await SecureStore.getItemAsync('access_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -21,17 +51,20 @@ api.interceptors.response.use(
   async (error) => {
     const status = error.response?.status;
     if (status === 401) {
-      // Try silent refresh
+      // Reactive refresh on 401 (FRS §5.1.4 — "Session expired" fallback)
       try {
-        const refreshToken = await AsyncStorage.getItem('refresh_token');
+        const refreshToken = await SecureStore.getItemAsync('refresh_token');
         if (refreshToken) {
           const res = await axios.post(`${BASE_URL}/auth/refresh`, { refresh_token: refreshToken });
-          await AsyncStorage.setItem('access_token', res.data.access_token);
+          await SecureStore.setItemAsync('access_token', res.data.access_token);
+          await SecureStore.setItemAsync('refresh_token', res.data.refresh_token);
           error.config.headers.Authorization = `Bearer ${res.data.access_token}`;
           return api.request(error.config);
         }
       } catch {
-        await AsyncStorage.multiRemove(['access_token', 'refresh_token']);
+        await SecureStore.deleteItemAsync('access_token');
+        await SecureStore.deleteItemAsync('refresh_token');
+        await SecureStore.deleteItemAsync('user_data');
       }
     }
     return Promise.reject(mapError(error));
@@ -77,4 +110,6 @@ export const triageAPI = {
 export const callsAPI = {
   initiate: (petId, triageId) => api.post('/calls/initiate', { pet_id: petId, triage_id: triageId }),
   end: (callId) => api.put(`/calls/${callId}/end`),
+  rate: (callId, rating, callNote = null) =>
+    api.put(`/calls/${callId}/rate`, { rating, call_note: callNote }),
 };

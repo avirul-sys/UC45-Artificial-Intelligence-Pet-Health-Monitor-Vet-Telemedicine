@@ -23,6 +23,8 @@
     "react-native-image-resizer": "^1.4.5",
     "@react-native-async-storage/async-storage": "~1.23.1",
     "@react-native-community/netinfo": "^11.3.2",
+    "expo-secure-store": "~13.0.0",
+    "expo-local-authentication": "~14.0.0",
     "react-native-webrtc": "^124.0.4",
     "axios": "^1.7.7",
     "react-native-paper": "^5.12.3"

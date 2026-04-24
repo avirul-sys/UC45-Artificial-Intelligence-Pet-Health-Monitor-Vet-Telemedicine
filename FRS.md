@@ -1,11 +1,11 @@
-# UC45 — Artificial Intelligence Pet Health Monitor & Vet Telemedicine Platform
+# AI Pet Health Monitor & Vet Telemedicine Platform
 ## Functional Requirements & Solution Document
 
 ---
 
 | Field | Details |
 |---|---|
-| **Document Reference** | UC45-FRS-v1.0 |
+| **Document Reference** | AIPH-FRS-v1.0 |
 | **Domain** | Pet Care — Mobile + API + Admin |
 | **Complexity** | Med-High |
 | **Version** | 1.0 — Initial Release |
@@ -47,7 +47,7 @@ India is home to over 30 million pets. Despite this, the vast majority of pet ow
 > - **Result B — Dangerous delay:** owner waits on a genuine emergency. Cost: pet health, or worse.
 > - **Root cause:** no intelligent first-filter exists in the Indian market today.
 
-UC45 is Amnex Infotechnologies' answer to this problem. It is a three-tier, Artificial Intelligence (AI)-powered platform that places an intelligent triage layer between the pet owner's anxiety and the veterinarian's expertise. Using GPT-4o Vision — OpenAI's multimodal AI model — the platform analyses a photo of the pet's symptom alongside a text description, assesses urgency, cross-references breed-specific risks, and returns a confidence-scored, plain-language result in under five seconds.
+AI Pet Health Monitor & Vet Telemedicine is Amnex Infotechnologies' answer to this problem. It is a three-tier, Artificial Intelligence (AI)-powered platform that places an intelligent triage layer between the pet owner's anxiety and the veterinarian's expertise. Using GPT-4o Vision — OpenAI's multimodal AI model — the platform analyses a photo of the pet's symptom alongside a text description, assesses urgency, cross-references breed-specific risks, and returns a confidence-scored, plain-language result in under five seconds.
 
 When the AI is confident (score ≥ 0.6), the owner receives a clear recommendation. When confidence is low, the system escalates gracefully — either to a human veterinarian via a live WebRTC (Web Real-Time Communication) video call, or with a transparent "unable to determine" message that does not mislead. Nothing is ever returned unvetted.
 
@@ -65,7 +65,7 @@ To become India's most trusted Artificial Intelligence-first platform for pet he
 
 ### 2.2 Platform Scope
 
-UC45 is a three-tier system. Each tier is independently deployable and communicates with adjacent tiers over secured HTTPS (HyperText Transfer Protocol Secure) REST (Representational State Transfer) Application Programming Interfaces (APIs).
+This platform is a three-tier system. Each tier is independently deployable and communicates with adjacent tiers over secured HTTPS (HyperText Transfer Protocol Secure) REST (Representational State Transfer) Application Programming Interfaces (APIs).
 
 | Tier | Module | Technology | Primary Audience |
 |---|---|---|---|
@@ -648,7 +648,7 @@ All acceptance criteria below are mandatory for delivery sign-off. Each is direc
 | **Exponential Backoff** | A retry strategy: wait 1 second before the first retry, 2 seconds before the second, 4 before the third. Prevents overwhelming a struggling service with immediate repeated requests. |
 | **FastAPI** | A modern Python web framework for building APIs. Chosen for its async-first architecture (enabling parallel AI module calls) and automatic OpenAPI documentation generation. |
 | **FRS — Functional Requirements Specification** | A document that describes the intended behaviour, features, inputs, outputs, and constraints of a software system. |
-| **GPT-4o** | OpenAI's multimodal Generative Pre-trained Transformer 4 model, capable of processing and generating both text and images (Vision). Used for all four AI modules in UC45. |
+| **GPT-4o** | OpenAI's multimodal Generative Pre-trained Transformer 4 model, capable of processing and generating both text and images (Vision). Used for all four AI modules in this platform. |
 | **JWT — JSON Web Token** | A compact, digitally signed token used to verify a user's identity. Consists of three base64-encoded parts: header, payload (`user_id`, expiry), signature. |
 | **ML — Machine Learning** | A subset of Artificial Intelligence where systems learn from data to improve performance without being explicitly re-programmed. |
 | **PII — Personally Identifiable Information** | Any data that can identify a specific individual: name, email, phone number, address. PII must never be written to the audit log. |
@@ -665,7 +665,7 @@ All acceptance criteria below are mandatory for delivery sign-off. Each is direc
 
 | Version | Date | Author | Changes |
 |---|---|---|---|
-| 1.0 | April 2026 | Avirul Dixit, Senior Business Analyst, Amnex Infotechnologies Pvt Ltd | Initial release — comprehensive FRS for UC45 covering all four audience groups |
+| 1.0 | April 2026 | Avirul Dixit, Senior Business Analyst, Amnex Infotechnologies Pvt Ltd | Initial release — comprehensive FRS for AI Pet Health Monitor & Vet Telemedicine covering all four audience groups |
 
 ### 9.2 Quick Reference — Who Should Read What
 

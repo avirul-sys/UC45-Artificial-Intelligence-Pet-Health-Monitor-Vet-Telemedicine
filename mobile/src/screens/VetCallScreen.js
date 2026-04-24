@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Alert,
+  View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Alert, TextInput,
 } from 'react-native';
 import { RTCPeerConnection, RTCView, mediaDevices } from 'react-native-webrtc';
 import { callsAPI } from '../services/api';
 import { COLORS } from '../constants/colors';
+import { logEvent, Events } from '../utils/analytics';
 
 const ICE_SERVERS = [{ urls: 'stun:stun.l.google.com:19302' }];
 
@@ -15,8 +16,10 @@ export default function VetCallScreen({ navigation, route }) {
   const [muted, setMuted] = useState(false);
   const [cameraOn, setCameraOn] = useState(true);
   const [duration, setDuration] = useState(0);
-  const [rating, setRating] = useState(0);
   const [callEnded, setCallEnded] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [note, setNote] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const pc = useRef(null);
   const timerRef = useRef(null);
@@ -24,6 +27,7 @@ export default function VetCallScreen({ navigation, route }) {
   useEffect(() => {
     startLocalStream();
     timerRef.current = setInterval(() => setDuration((d) => d + 1), 1000);
+    logEvent(Events.VET_CALL_INITIATED, { has_call_id: !!callId });
     return () => {
       cleanup();
       clearInterval(timerRef.current);
@@ -34,10 +38,8 @@ export default function VetCallScreen({ navigation, route }) {
     try {
       const stream = await mediaDevices.getUserMedia({ video: true, audio: true });
       setLocalStream(stream);
-
       pc.current = new RTCPeerConnection({ iceServers: ICE_SERVERS });
       stream.getTracks().forEach((track) => pc.current.addTrack(track, stream));
-
       pc.current.ontrack = (event) => {
         if (event.streams?.[0]) setRemoteStream(event.streams[0]);
       };
@@ -74,7 +76,24 @@ export default function VetCallScreen({ navigation, route }) {
     setCallEnded(true);
   };
 
-  const formatDuration = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  const submitRating = async () => {
+    if (!callId) {
+      navigation.navigate('Home');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await callsAPI.rate(callId, rating || 0, note.trim() || null);
+    } catch {
+      // Non-blocking — rating failure should not prevent navigation
+    } finally {
+      setSubmitting(false);
+      navigation.navigate('Home');
+    }
+  };
+
+  const formatDuration = (s) =>
+    `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
   if (callEnded) {
     return (
@@ -83,16 +102,33 @@ export default function VetCallScreen({ navigation, route }) {
         <Text style={styles.ratingSubtitle}>Rate your session with {vetName}</Text>
         <View style={styles.stars}>
           {[1, 2, 3, 4, 5].map((star) => (
-            <TouchableOpacity key={star} onPress={() => setRating(star)} style={styles.starBtn}>
+            <TouchableOpacity
+              key={star}
+              onPress={() => setRating(star)}
+              style={styles.starBtn}
+              accessibilityLabel={`Rate ${star} star${star > 1 ? 's' : ''}`}
+              accessibilityRole="button"
+            >
               <Text style={[styles.star, star <= rating && styles.starActive]}>★</Text>
             </TouchableOpacity>
           ))}
         </View>
+        <TextInput
+          style={styles.noteInput}
+          placeholder="Optional: add a note about this consultation…"
+          value={note}
+          onChangeText={setNote}
+          multiline
+          numberOfLines={3}
+        />
         <TouchableOpacity
-          style={styles.btnPrimary}
-          onPress={() => navigation.navigate('Home')}
+          style={[styles.btnPrimary, submitting && styles.btnDisabled]}
+          onPress={submitRating}
+          disabled={submitting}
         >
-          <Text style={styles.btnText}>{rating ? 'Submit rating' : 'Skip'}</Text>
+          <Text style={styles.btnText}>
+            {submitting ? 'Saving...' : rating ? 'Submit rating' : 'Skip'}
+          </Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -109,7 +145,6 @@ export default function VetCallScreen({ navigation, route }) {
             <Text style={styles.waitingText}>Connecting to {vetName}...</Text>
           </View>
         )}
-
         {localStream && (
           <RTCView streamURL={localStream.toURL()} style={styles.localVideo} objectFit="cover" />
         )}
@@ -118,13 +153,28 @@ export default function VetCallScreen({ navigation, route }) {
       <View style={styles.controls}>
         <Text style={styles.timer}>{formatDuration(duration)}</Text>
         <View style={styles.controlRow}>
-          <TouchableOpacity style={[styles.controlBtn, muted && styles.controlBtnActive]} onPress={toggleMute}>
+          <TouchableOpacity
+            style={[styles.controlBtn, muted && styles.controlBtnActive]}
+            onPress={toggleMute}
+            accessibilityLabel={muted ? 'Unmute' : 'Mute'}
+            accessibilityRole="button"
+          >
             <Text style={styles.controlIcon}>{muted ? '🔇' : '🎙'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.endCallBtn} onPress={endCall}>
+          <TouchableOpacity
+            style={styles.endCallBtn}
+            onPress={endCall}
+            accessibilityLabel="End call"
+            accessibilityRole="button"
+          >
             <Text style={styles.endCallIcon}>📵</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.controlBtn, !cameraOn && styles.controlBtnActive]} onPress={toggleCamera}>
+          <TouchableOpacity
+            style={[styles.controlBtn, !cameraOn && styles.controlBtnActive]}
+            onPress={toggleCamera}
+            accessibilityLabel={cameraOn ? 'Turn camera off' : 'Turn camera on'}
+            accessibilityRole="button"
+          >
             <Text style={styles.controlIcon}>{cameraOn ? '📷' : '🚫'}</Text>
           </TouchableOpacity>
         </View>
@@ -155,12 +205,16 @@ const styles = StyleSheet.create({
   ratingContainer: { flex: 1, backgroundColor: COLORS.background, justifyContent: 'center',
     alignItems: 'center', padding: 32 },
   ratingTitle: { fontSize: 24, fontWeight: '700', color: COLORS.text, marginBottom: 8 },
-  ratingSubtitle: { fontSize: 15, color: COLORS.textMuted, marginBottom: 32 },
-  stars: { flexDirection: 'row', gap: 8, marginBottom: 32 },
+  ratingSubtitle: { fontSize: 15, color: COLORS.textMuted, marginBottom: 28 },
+  stars: { flexDirection: 'row', gap: 8, marginBottom: 24 },
   starBtn: { padding: 4, minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'center' },
   star: { fontSize: 40, color: COLORS.border },
   starActive: { color: '#F59E0B' },
+  noteInput: { borderWidth: 1, borderColor: COLORS.border, borderRadius: 10, padding: 12,
+    backgroundColor: COLORS.surface, fontSize: 14, width: '100%', minHeight: 80,
+    textAlignVertical: 'top', marginBottom: 20 },
   btnPrimary: { backgroundColor: COLORS.primary, padding: 16, borderRadius: 10,
     alignItems: 'center', minWidth: 200 },
+  btnDisabled: { opacity: 0.6 },
   btnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
 });

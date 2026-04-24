@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, SafeAreaView,
+  View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView,
 } from 'react-native';
 import { authAPI } from '../services/api';
 import { COLORS } from '../constants/colors';
@@ -24,6 +24,7 @@ export default function RegisterScreen({ navigation }) {
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState(null);
 
   const handleRegister = async () => {
     const err = validate(name, email, phone, password, confirm);
@@ -31,14 +32,39 @@ export default function RegisterScreen({ navigation }) {
     setError('');
     setLoading(true);
     try {
-      await authAPI.register({ name, email, phone, password });
-      navigation.navigate('Login');
+      const res = await authAPI.register({ name, email, phone, password });
+      setUserId(res.data.user_id);
     } catch (e) {
       setError(e.userMessage || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
+
+  // Success state — FR-01: show reference ID on screen (FRS §3.1)
+  if (userId) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.successContainer}>
+          <Text style={styles.successIcon}>✅</Text>
+          <Text style={styles.successTitle}>Account created!</Text>
+          <Text style={styles.successBody}>
+            Welcome, {name.split(' ')[0]}. Your account has been created successfully.
+          </Text>
+          <View style={styles.refCard}>
+            <Text style={styles.refLabel}>Reference ID</Text>
+            <Text style={styles.refId}>{userId.slice(0, 8).toUpperCase()}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.btnPrimary}
+            onPress={() => navigation.navigate('Login')}
+          >
+            <Text style={styles.btnText}>Set up your pet profile →</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -85,6 +111,15 @@ export default function RegisterScreen({ navigation }) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   container: { padding: 24 },
+  successContainer: { flex: 1, padding: 32, justifyContent: 'center', alignItems: 'center' },
+  successIcon: { fontSize: 56, marginBottom: 16 },
+  successTitle: { fontSize: 26, fontWeight: '700', color: COLORS.text, marginBottom: 8 },
+  successBody: { fontSize: 15, color: COLORS.textMuted, textAlign: 'center', lineHeight: 22, marginBottom: 24 },
+  refCard: { backgroundColor: COLORS.surface, borderRadius: 10, padding: 18,
+    borderWidth: 1, borderColor: COLORS.border, alignItems: 'center', marginBottom: 28, width: '100%' },
+  refLabel: { fontSize: 11, color: COLORS.textMuted, textTransform: 'uppercase',
+    letterSpacing: 1, marginBottom: 6 },
+  refId: { fontSize: 22, fontWeight: '700', color: COLORS.primary, letterSpacing: 2 },
   title: { fontSize: 26, fontWeight: '700', color: COLORS.text, marginBottom: 20 },
   label: { fontSize: 14, fontWeight: '500', color: COLORS.text, marginBottom: 4 },
   input: { borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, padding: 12, marginBottom: 14,
@@ -92,7 +127,7 @@ const styles = StyleSheet.create({
   error: { backgroundColor: '#FEE2E2', color: COLORS.error, padding: 12, borderRadius: 8,
     marginBottom: 14, fontSize: 14 },
   btnPrimary: { backgroundColor: COLORS.primary, padding: 16, borderRadius: 10,
-    alignItems: 'center', minHeight: 52, marginTop: 8 },
+    alignItems: 'center', minHeight: 52, marginTop: 8, width: '100%' },
   btnDisabled: { opacity: 0.6 },
   btnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
   link: { color: COLORS.primary, textAlign: 'center', fontSize: 15, marginTop: 16 },

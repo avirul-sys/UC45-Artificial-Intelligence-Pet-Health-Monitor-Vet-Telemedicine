@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UC45 — Full-Stack Wireframe v3</title>
+<title>AI Pet Health Monitor & Vet Telemedicine — Wireframe v4</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#0f172a; display:flex; min-height:100vh; }
@@ -295,8 +295,8 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 <!-- ════════════════ SIDEBAR ════════════════ -->
 <nav class="sidebar">
   <div class="sidebar-logo">
-    <div class="app-name">🐾 UC45</div>
-    <div class="app-sub">Full-Stack Wireframe v3</div>
+    <div class="app-name">🐾 AI Pet Health</div>
+    <div class="app-sub">Full-Stack Wireframe v4</div>
   </div>
 
   <div class="sidebar-title">Mobile — Auth</div>
@@ -348,8 +348,8 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 <!-- ════════════════ CANVAS ════════════════ -->
 <main class="canvas">
   <div class="canvas-header">
-    <h1>UC45 — AI Pet Health Monitor &amp; Vet Telemedicine</h1>
-    <p>Interactive wireframe v3 · 17 mobile screens + 4 admin screens · All buttons clickable</p>
+    <h1>AI Pet Health Monitor &amp; Vet Telemedicine</h1>
+    <p>Interactive wireframe v4 · 17 mobile screens + 4 admin screens · All buttons clickable · Biometric + analytics + activity feed</p>
   </div>
 
   <!-- ── MOBILE VIEW ── -->
@@ -363,7 +363,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
           <div class="status-bar" style="color:#1e293b;background:transparent;"><span>9:41</span><span>▲▲▲ 🔋</span></div>
           <div id="ob0" style="flex:1;display:flex;flex-direction:column;">
             <div class="ob-dots"><div class="ob-dot active"></div><div class="ob-dot"></div><div class="ob-dot"></div></div>
-            <div class="ob-body"><div style="font-size:52px;margin-bottom:16px;">🐾</div><div class="ob-title">Welcome to UC45</div><div class="ob-desc">AI-powered pet health triage — know in seconds if your pet needs a vet.</div></div>
+            <div class="ob-body"><div style="font-size:52px;margin-bottom:16px;">🐾</div><div class="ob-title">Welcome to AI Pet Health Monitor</div><div class="ob-desc">AI-powered pet health triage — know in seconds if your pet needs a vet.</div></div>
             <div class="ob-actions"><button class="btn-primary" onclick="obStep(1)">Next →</button></div>
           </div>
           <div id="ob1" style="flex:1;display:none;flex-direction:column;">
@@ -382,14 +382,24 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
         <div class="phone-screen screen" id="s-register">
           <div class="status-bar" style="background:#fff;color:#111;border-bottom:1px solid var(--border);"><span>9:41</span><span>▲▲ 🔋</span></div>
           <div class="nav-header"><div class="nav-back" onclick="gs('s-onboarding')">←</div><div class="nav-title">Create account</div></div>
-          <div class="scroll-area">
+          <div class="scroll-area" id="register-form">
             <label class="label">Full name</label><input class="input" value="Priya Sharma" readonly>
             <label class="label">Email</label><input class="input" value="priya@example.com" readonly>
             <label class="label">Phone number</label><input class="input" value="+91 98765 43210" readonly>
             <label class="label">Password</label><input class="input" value="••••••••••" readonly>
             <label class="label">Confirm password</label><input class="input" value="••••••••••" readonly>
-            <button class="btn-primary" onclick="gs('s-petprofile')" style="margin-top:4px">Register</button>
+            <button class="btn-primary" onclick="registrationSuccess()" style="margin-top:4px">Register</button>
             <a class="link" onclick="gs('s-login')">Already have an account? Log in</a>
+          </div>
+          <div id="register-success" style="display:none;flex:1;padding:32px;flex-direction:column;justify-content:center;align-items:center;background:var(--bg);">
+            <div style="font-size:52px;margin-bottom:16px;">✅</div>
+            <div style="font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px;">Account created!</div>
+            <div style="font-size:14px;color:var(--muted);text-align:center;line-height:1.65;margin-bottom:24px;">Welcome, Priya. Your account has been created successfully.</div>
+            <div style="background:#fff;border-radius:10px;padding:18px;border:1px solid var(--border);align-items:center;margin-bottom:28px;width:100%;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Reference ID</div>
+              <div style="font-size:20px;font-weight:700;color:var(--primary);letter-spacing:2px;">A3F9C1D2</div>
+            </div>
+            <button class="btn-primary" onclick="gs('s-login')">Set up your pet profile →</button>
           </div>
         </div>
 
@@ -397,12 +407,27 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
         <div class="phone-screen screen" id="s-login">
           <div class="status-bar" style="background:#fff;color:#111;border-bottom:1px solid var(--border);"><span>9:41</span><span>▲▲ 🔋</span></div>
           <div class="nav-header"><div class="nav-back" onclick="gs('s-onboarding')">←</div><div class="nav-title">Log in</div></div>
-          <div class="scroll-area" style="display:flex;flex-direction:column;justify-content:center;">
+          <div id="login-form" style="flex:1;overflow-y:auto;background:var(--bg);padding:18px;display:flex;flex-direction:column;justify-content:center;">
             <label class="label">Email</label><input class="input" value="priya@example.com" readonly>
             <label class="label">Password</label><input class="input" value="••••••••" readonly>
             <div style="text-align:right;margin-bottom:14px;"><a style="color:var(--primary);font-size:12px;cursor:pointer;" onclick="gs('s-forgot')">Forgot password?</a></div>
-            <button class="btn-primary" onclick="gs('s-home')">Log in</button>
+            <button class="btn-primary" onclick="showBioEnroll()">Log in</button>
+            <button class="btn-outline" onclick="gs('s-home')" style="margin-top:10px;">🔐 Use biometric login</button>
             <a class="link" onclick="gs('s-register')">Need an account? Register</a>
+          </div>
+          <div id="bio-enroll" style="display:none;flex:1;padding:24px;flex-direction:column;justify-content:center;background:var(--bg);">
+            <div style="font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px;">Enable biometric login?</div>
+            <div style="font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:24px;">Use fingerprint or Face ID to log in faster next time. You can change this in settings.</div>
+            <div style="background:#fff;border-radius:12px;padding:18px;border:1px solid var(--border);display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+              <span style="font-size:26px;">🔐</span>
+              <span style="flex:1;font-size:14px;font-weight:600;color:var(--text);">Biometric authentication</span>
+              <label style="position:relative;display:inline-block;width:42px;height:24px;cursor:pointer;">
+                <input type="checkbox" id="bio-toggle" style="opacity:0;width:0;height:0;" onchange="this.parentNode.querySelector('span').style.background=this.checked?'var(--primary)':'#D1D5DB'">
+                <span style="position:absolute;inset:0;background:#D1D5DB;border-radius:12px;transition:.2s;"></span>
+                <span style="position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s;"></span>
+              </label>
+            </div>
+            <button class="btn-primary" onclick="gs('s-home')">Continue</button>
           </div>
         </div>
 
@@ -425,7 +450,13 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
           <div class="status-bar" style="background:#fff;color:#111;border-bottom:1px solid var(--border);"><span>9:41</span><span>▲▲ 🔋</span></div>
           <div class="home-header">
             <div class="home-greeting">Hello, Priya 👋</div>
-            <div class="home-logout" onclick="gs('s-onboarding')">Log out</div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="position:relative;cursor:pointer;padding:4px;" onclick="showNotifications()" title="Notifications">
+                <span style="font-size:20px;">🔔</span>
+                <div style="position:absolute;top:2px;right:2px;width:8px;height:8px;background:#EF4444;border-radius:50%;"></div>
+              </div>
+              <div class="home-logout" onclick="gs('s-onboarding')">Log out</div>
+            </div>
           </div>
           <div class="scroll-area">
             <div class="pet-card"><div class="pet-card-name">🐕 Bruno</div><div class="pet-card-meta">Labrador Retriever · Dog<br>36 months · 28 kg</div></div>
@@ -434,6 +465,26 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
             <div class="action-card" onclick="gs('s-vetbooking')"><div class="action-icon">📅</div><div><div class="action-title">Book a vet</div><div class="action-desc">Browse available veterinarians and book a slot</div></div></div>
             <div class="action-card" onclick="gs('s-history')"><div class="action-icon">📋</div><div><div class="action-title">Health history</div><div class="action-desc">View past triage results and vet consultations</div></div></div>
             <div class="action-card" onclick="gs('s-petprofile')" style="border-style:dashed;"><div class="action-icon">🐾</div><div><div class="action-title">Edit pet profile</div><div class="action-desc">Manage Bruno's details and breed information</div></div></div>
+            <div class="section-title">Recent activity</div>
+            <div class="history-item" onclick="gs('s-result-emergency')">
+              <div class="history-badge" style="background:var(--emergency);"><div class="history-badge-icon">⚠</div><div class="history-badge-text">EMERGENCY</div></div>
+              <div class="history-info"><div class="history-pet">Bruno · EMERGENCY</div><div class="history-date">24 Apr 2026</div></div>
+              <div class="history-conf" style="font-size:14px;font-weight:700;color:var(--text);">82%</div>
+              <div class="history-chevron">›</div>
+            </div>
+            <div class="history-item" onclick="gs('s-result-safe')">
+              <div class="history-badge" style="background:var(--safe);"><div class="history-badge-icon">✓</div><div class="history-badge-text">SAFE</div></div>
+              <div class="history-info"><div class="history-pet">Bruno · SAFE</div><div class="history-date">18 Apr 2026</div></div>
+              <div class="history-conf" style="font-size:14px;font-weight:700;color:var(--text);">76%</div>
+              <div class="history-chevron">›</div>
+            </div>
+            <div class="history-item" onclick="gs('s-result-urgent')">
+              <div class="history-badge" style="background:var(--urgent);"><div class="history-badge-icon">🕐</div><div class="history-badge-text">URGENT</div></div>
+              <div class="history-info"><div class="history-pet">Bruno · URGENT</div><div class="history-date">10 Apr 2026</div></div>
+              <div class="history-conf" style="font-size:14px;font-weight:700;color:var(--text);">71%</div>
+              <div class="history-chevron">›</div>
+            </div>
+            <a class="link" onclick="gs('s-history')" style="margin-top:4px;margin-bottom:8px;">View all history →</a>
           </div>
         </div>
 
@@ -650,8 +701,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
               <span class="star" onclick="rateStar(5)" id="s5">★</span>
             </div>
             <textarea class="input" rows="3" placeholder="Optional: add a note about this consultation…" style="resize:none;font-family:inherit;"></textarea>
-            <button class="btn-primary" onclick="gs('s-home')" style="margin-top:4px;">Submit rating</button>
-            <a class="link" onclick="gs('s-home')">Skip</a>
+            <button class="btn-primary" id="rating-submit-btn" onclick="submitRating()" style="margin-top:4px;">Skip</button>
           </div>
         </div>
 
@@ -721,29 +771,32 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
           </ul>
         </div>
         <div class="info-panel">
-          <h3>🐛 Bugs fixed (v2)</h3>
+          <h3>🆕 New in v4 (mobile 100%)</h3>
           <ul>
-            <li><span>HomeScreen</span>Logout → resets nav to Onboarding</li>
-            <li><span>VetCallScreen</span>Camera off: 📷→🚫</li>
-            <li><span>LoginScreen</span>ForgotPassword route registered</li>
-            <li><span>Dockerfile</span>WORKDIR + uvicorn path fixed</li>
+            <li><span>FR-04</span>Biometric login (fingerprint / Face ID)</li>
+            <li><span>FR-01</span>Register → Reference ID success card</li>
+            <li><span>MOB-04</span>Home: bell 🔔 + recent activity feed</li>
+            <li><span>MOB-11</span>Rating saved to backend via callsAPI</li>
+            <li><span>Security</span>All tokens in SecureStore (not AsyncStorage)</li>
+            <li><span>§5.1.4</span>Analytics: 4 events instrumented</li>
+            <li><span>§5.1.4</span>Proactive JWT refresh at 45 min</li>
           </ul>
         </div>
         <div class="info-panel">
           <h3>📱 All 17 mobile screens</h3>
           <ul>
             <li><span>MOB-01</span>Onboarding (3 steps)</li>
-            <li><span>MOB-02</span>Register</li>
-            <li><span>MOB-03</span>Login</li>
+            <li><span>MOB-02</span>Register + success state ✅</li>
+            <li><span>MOB-03</span>Login + biometric enroll ✅</li>
             <li><span>FR-05</span>Forgot Password</li>
-            <li><span>MOB-04</span>Home Dashboard</li>
+            <li><span>MOB-04</span>Home + bell + activity ✅</li>
             <li><span>MOB-05</span>Pet Profile</li>
             <li><span>MOB-06</span>Symptom Input</li>
             <li><span>MOB-07</span>Processing</li>
             <li><span>MOB-08</span>Result ×4 variants</li>
             <li><span>MOB-09</span>Fallback</li>
             <li><span>MOB-10</span>Vet Booking</li>
-            <li><span>MOB-11</span>Vet Call + Rating</li>
+            <li><span>MOB-11</span>Vet Call + Rating (saves) ✅</li>
             <li><span>MOB-12</span>Health History</li>
           </ul>
         </div>
@@ -767,7 +820,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
         <div class="adm-screen active" id="s-admin-login">
           <div class="adm-login-wrap">
             <div class="adm-login-card">
-              <div style="font-size:13px;font-weight:700;color:#1E293B;margin-bottom:2px;">🐾 UC45 Admin</div>
+              <div style="font-size:13px;font-weight:700;color:#1E293B;margin-bottom:2px;">🐾 AI Pet Health Admin</div>
               <div style="font-size:22px;font-weight:700;color:#111827;margin:12px 0 4px;">Sign in</div>
               <div style="font-size:13px;color:#6B7280;margin-bottom:24px;">Admin access required to continue.</div>
               <label class="adm-label">Email address</label>
@@ -783,7 +836,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
         <!-- ADMIN DASHBOARD -->
         <div class="adm-screen" id="s-admin-dashboard">
           <div class="adm-appbar">
-            <div class="adm-appbar-title">UC45 Admin</div>
+            <div class="adm-appbar-title">AI Pet Health Admin</div>
             <div class="adm-appbar-right">
               <span class="adm-user">admin@uc45.com</span>
               <button class="adm-signout" onclick="goAdminScreen('s-admin-login')">Sign out</button>
@@ -824,7 +877,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
         <!-- ADMIN CONFIG -->
         <div class="adm-screen" id="s-admin-config">
           <div class="adm-appbar">
-            <div class="adm-appbar-title">UC45 Admin</div>
+            <div class="adm-appbar-title">AI Pet Health Admin</div>
             <div class="adm-appbar-right">
               <span class="adm-user">admin@uc45.com</span>
               <button class="adm-signout" onclick="goAdminScreen('s-admin-login')">Sign out</button>
@@ -865,7 +918,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
         <!-- ADMIN AUDIT LOG -->
         <div class="adm-screen" id="s-admin-audit">
           <div class="adm-appbar">
-            <div class="adm-appbar-title">UC45 Admin</div>
+            <div class="adm-appbar-title">AI Pet Health Admin</div>
             <div class="adm-appbar-right">
               <span class="adm-user">admin@uc45.com</span>
               <button class="adm-signout" onclick="goAdminScreen('s-admin-login')">Sign out</button>
@@ -1038,6 +1091,21 @@ function gs(id) {
     item.classList.remove('active');
     if ((item.getAttribute('onclick')||'').includes(`'${id}'`)) item.classList.add('active');
   });
+  // Reset screen states on re-entry
+  if (id === 's-login') {
+    document.getElementById('login-form').style.display = 'flex';
+    document.getElementById('bio-enroll').style.display = 'none';
+  }
+  if (id === 's-register') {
+    document.getElementById('register-form').style.display = 'block';
+    document.getElementById('register-success').style.display = 'none';
+  }
+  if (id === 's-rating') {
+    currentRating = 0;
+    for(let i=1;i<=5;i++) { const el=document.getElementById('s'+i); if(el) el.classList.remove('on'); }
+    const rb = document.getElementById('rating-submit-btn');
+    if (rb) { rb.textContent = 'Skip'; rb.disabled = false; }
+  }
 }
 
 // ── Admin navigation ───────────────────────────────────────────
@@ -1140,8 +1208,42 @@ function toggleCam() {
 }
 
 // ── Star rating ────────────────────────────────────────────────
+let currentRating = 0;
 function rateStar(n) {
+  currentRating = n;
   for(let i=1;i<=5;i++) document.getElementById('s'+i).classList.toggle('on',i<=n);
+  document.getElementById('rating-submit-btn').textContent = 'Submit rating';
+}
+function submitRating() {
+  if (currentRating > 0) {
+    const btn = document.getElementById('rating-submit-btn');
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+    setTimeout(() => { currentRating=0; btn.disabled=false; gs('s-home'); }, 900);
+  } else {
+    gs('s-home');
+  }
+}
+
+// ── Register success state ─────────────────────────────────────
+function registrationSuccess() {
+  document.getElementById('register-form').style.display = 'none';
+  const s = document.getElementById('register-success');
+  s.style.display = 'flex';
+  s.style.flexDirection = 'column';
+}
+
+// ── Login biometric enroll ─────────────────────────────────────
+function showBioEnroll() {
+  document.getElementById('login-form').style.display = 'none';
+  const b = document.getElementById('bio-enroll');
+  b.style.display = 'flex';
+  b.style.flexDirection = 'column';
+}
+
+// ── Home notifications bell ────────────────────────────────────
+function showNotifications() {
+  alert('🔔 Notifications\n\nYour last triage was 24 Apr 2026. Tap "Health history" to view all results.');
 }
 
 // ── Admin tier chip toggle ─────────────────────────────────────
