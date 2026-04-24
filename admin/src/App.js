@@ -3,7 +3,7 @@ import {
   AppBar, Toolbar, Typography, Box, Card, CardContent, Button, TextField,
   Tab, Tabs, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Chip, Select, MenuItem, FormControl, InputLabel, CircularProgress,
-  Snackbar, Alert, LinearProgress,
+  Snackbar, Alert, LinearProgress, Divider,
 } from '@mui/material';
 import axios from 'axios';
 
@@ -55,6 +55,14 @@ const CONFIG_META = {
 };
 
 const ALL_TIERS = ['EMERGENCY', 'URGENT', 'MONITOR', 'SAFE', 'UNDETERMINED'];
+
+const CONF_BUCKET_COLORS = {
+  '0-40': '#DC2626',
+  '40-60': '#D97706',
+  '60-70': '#F59E0B',
+  '70-80': '#16A34A',
+  '80-100': '#059669',
+};
 
 function apiClient(token) {
   return axios.create({
@@ -110,7 +118,7 @@ function LoginScreen({ onLogin }) {
   );
 }
 
-// ─── Dashboard ────────────────────────────────────────────────────────────────
+// ─── Shared chart primitives ──────────────────────────────────────────────────
 function MetricCard({ label, value, sub, color }) {
   return (
     <Card sx={{ flex: 1, minWidth: 170 }}>
@@ -138,6 +146,79 @@ function BarRow({ label, value, color }) {
   );
 }
 
+// SVG donut chart — urgency tier breakdown
+function DonutChart({ distribution }) {
+  const total = ALL_TIERS.reduce((s, t) => s + (distribution?.[t] || 0), 0);
+  if (!total) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 120 }}>
+        <Typography variant="body2" color="text.secondary">No triage data today</Typography>
+      </Box>
+    );
+  }
+  const cx = 60, cy = 60, outerR = 52, innerR = 32;
+  let angle = -Math.PI / 2;
+  const segments = [];
+  ALL_TIERS.forEach((tier) => {
+    const count = distribution?.[tier] || 0;
+    if (!count) return;
+    const slice = (count / total) * 2 * Math.PI;
+    const x1 = cx + outerR * Math.cos(angle);
+    const y1 = cy + outerR * Math.sin(angle);
+    const x2 = cx + outerR * Math.cos(angle + slice);
+    const y2 = cy + outerR * Math.sin(angle + slice);
+    const ix1 = cx + innerR * Math.cos(angle + slice);
+    const iy1 = cy + innerR * Math.sin(angle + slice);
+    const ix2 = cx + innerR * Math.cos(angle);
+    const iy2 = cy + innerR * Math.sin(angle);
+    const large = slice > Math.PI ? 1 : 0;
+    const d = `M${x1},${y1} A${outerR},${outerR} 0 ${large} 1 ${x2},${y2} L${ix1},${iy1} A${innerR},${innerR} 0 ${large} 0 ${ix2},${iy2} Z`;
+    segments.push({ tier, count, d, color: URGENCY_COLORS[tier] });
+    angle += slice;
+  });
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+      <svg width={120} height={120} viewBox="0 0 120 120" style={{ flexShrink: 0 }}>
+        {segments.map((s) => <path key={s.tier} d={s.d} fill={s.color} />)}
+        <text x="60" y="55" textAnchor="middle" fontSize="11" fill="#6B7280">Total</text>
+        <text x="60" y="72" textAnchor="middle" fontSize="20" fontWeight="bold" fill="#111827">{total}</text>
+      </svg>
+      <Box>
+        {segments.map((s) => (
+          <Box key={s.tier} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
+            <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: s.color, flexShrink: 0 }} />
+            <Typography variant="caption" color="text.secondary">
+              {s.tier}: <strong>{s.count}</strong>
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
+// Horizontal bar for confidence bucket
+function ConfBucketBar({ label, count, max }) {
+  const pct = max > 0 ? Math.round((count / max) * 100) : 0;
+  const color = CONF_BUCKET_COLORS[label] || '#6B7280';
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 0.5 }}>
+      <Typography variant="caption" sx={{ width: 68, flexShrink: 0, color: 'text.secondary', fontFamily: 'monospace' }}>
+        {label}%
+      </Typography>
+      <Box sx={{ flex: 1 }}>
+        <LinearProgress variant="determinate" value={pct}
+          sx={{ height: 9, borderRadius: 4, bgcolor: '#E5E7EB',
+            '& .MuiLinearProgress-bar': { bgcolor: color } }} />
+      </Box>
+      <Typography variant="caption" sx={{ width: 28, textAlign: 'right', fontWeight: 600, color }}>
+        {count}
+      </Typography>
+    </Box>
+  );
+}
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
 function DashboardTab({ token }) {
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -165,6 +246,7 @@ function DashboardTab({ token }) {
 
       {loading && <LinearProgress sx={{ mb: 3 }} />}
 
+      {/* Metric cards */}
       <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
         <MetricCard
           label="Triage requests today"
@@ -190,8 +272,9 @@ function DashboardTab({ token }) {
         />
       </Box>
 
+      {/* Health indicators */}
       <Typography variant="subtitle1" fontWeight={600} mb={1.5}>Health indicators</Typography>
-      <Paper variant="outlined" sx={{ p: 2 }}>
+      <Paper variant="outlined" sx={{ p: 2, mb: 4 }}>
         <BarRow
           label="Avg confidence"
           value={confPct}
@@ -203,6 +286,92 @@ function DashboardTab({ token }) {
           color={fallPct < 10 ? '#16A34A' : fallPct < 25 ? '#D97706' : '#DC2626'}
         />
       </Paper>
+
+      {/* Charts row */}
+      <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
+        {/* Urgency donut */}
+        <Paper variant="outlined" sx={{ flex: 1, minWidth: 280, p: 2.5 }}>
+          <Typography variant="subtitle2" fontWeight={600} mb={2}>Urgency breakdown (today)</Typography>
+          <DonutChart distribution={metrics?.urgency_distribution || {}} />
+        </Paper>
+
+        {/* Confidence distribution */}
+        <Paper variant="outlined" sx={{ flex: 1, minWidth: 280, p: 2.5 }}>
+          <Typography variant="subtitle2" fontWeight={600} mb={2}>
+            Confidence distribution (last 30 days)
+          </Typography>
+          {metrics ? (
+            (() => {
+              const b = metrics.confidence_buckets || {};
+              const maxCount = Math.max(...Object.values(b), 1);
+              return Object.entries(b).map(([k, v]) => (
+                <ConfBucketBar key={k} label={k} count={v} max={maxCount} />
+              ));
+            })()
+          ) : (
+            <LinearProgress />
+          )}
+        </Paper>
+      </Box>
+
+      {/* Recent triage events */}
+      {metrics?.recent_triages?.length > 0 && (
+        <Box>
+          <Typography variant="subtitle1" fontWeight={600} mb={1.5}>Recent triage events</Typography>
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableHead>
+                <TableRow sx={{ bgcolor: '#F9FAFB' }}>
+                  <TableCell sx={{ fontWeight: 700 }}>ID</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Urgency</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Confidence</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Fallback</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Timestamp</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {metrics.recent_triages.map((row) => {
+                  const confPct = Math.round((row.confidence_score || 0) * 100);
+                  const confColor = confPct >= 70 ? '#16A34A' : confPct >= 50 ? '#D97706' : '#DC2626';
+                  return (
+                    <TableRow key={row.id} hover>
+                      <TableCell sx={{ fontFamily: 'monospace', fontSize: 12, color: '#6B7280' }}>
+                        {row.id}…
+                      </TableCell>
+                      <TableCell>
+                        <Chip label={row.urgency_tier} size="small" sx={{
+                          bgcolor: URGENCY_BG[row.urgency_tier] || '#F9FAFB',
+                          color: URGENCY_COLORS[row.urgency_tier] || '#6B7280',
+                          border: `1px solid ${URGENCY_COLORS[row.urgency_tier] || '#E5E7EB'}`,
+                          fontWeight: 600, fontSize: 11,
+                        }} />
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <LinearProgress variant="determinate" value={confPct}
+                            sx={{ width: 56, height: 6, borderRadius: 3, bgcolor: '#E5E7EB',
+                              '& .MuiLinearProgress-bar': { bgcolor: confColor } }} />
+                          <Typography variant="caption" sx={{ color: confColor, fontWeight: 600 }}>
+                            {confPct}%
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        {row.fallback_triggered
+                          ? <Chip label="Yes" size="small" sx={{ bgcolor: '#FEF2F2', color: '#DC2626', border: '1px solid #DC2626', fontSize: 11 }} />
+                          : <Chip label="No" size="small" sx={{ bgcolor: '#F0FDF4', color: '#16A34A', border: '1px solid #16A34A', fontSize: 11 }} />}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: 12, whiteSpace: 'nowrap' }}>
+                        {new Date(row.created_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      )}
     </Box>
   );
 }
@@ -214,6 +383,17 @@ function ConfigTab({ token }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState('');
   const [snack, setSnack] = useState({ open: false, msg: '', sev: 'success' });
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const fetchHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const res = await apiClient(token).get('/admin/config/history');
+      setHistory(res.data);
+    } catch {}
+    setHistoryLoading(false);
+  }, [token]);
 
   useEffect(() => {
     apiClient(token).get('/admin/config')
@@ -223,7 +403,8 @@ function ConfigTab({ token }) {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [token]);
+    fetchHistory();
+  }, [token, fetchHistory]);
 
   const save = async (key) => {
     setSaving(key);
@@ -231,6 +412,7 @@ function ConfigTab({ token }) {
       await apiClient(token).put('/admin/config', { key, value: String(edits[key]) });
       setConfigs((c) => ({ ...c, [key]: edits[key] }));
       setSnack({ open: true, msg: `"${CONFIG_META[key]?.label || key}" saved.`, sev: 'success' });
+      fetchHistory();
     } catch (err) {
       const detail = err.response?.data?.detail;
       setSnack({ open: true, msg: typeof detail === 'string' ? detail : 'Save failed.', sev: 'error' });
@@ -284,6 +466,56 @@ function ConfigTab({ token }) {
       <Snackbar open={snack.open} autoHideDuration={4000} onClose={() => setSnack((s) => ({ ...s, open: false }))}>
         <Alert severity={snack.sev} onClose={() => setSnack((s) => ({ ...s, open: false }))}>{snack.msg}</Alert>
       </Snackbar>
+
+      {/* Change history (FRS §5.3.2) */}
+      <Divider sx={{ my: 4 }} />
+      <Typography variant="h6" fontWeight={600} mb={0.5}>Change history</Typography>
+      <Typography variant="body2" color="text.secondary" mb={2}>
+        Last 10 configuration changes — who changed what and when.
+      </Typography>
+
+      {historyLoading ? <LinearProgress /> : (
+        <TableContainer component={Paper} variant="outlined">
+          <Table size="small">
+            <TableHead>
+              <TableRow sx={{ bgcolor: '#F9FAFB' }}>
+                <TableCell sx={{ fontWeight: 700 }}>Parameter</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Old value</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>New value</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Changed by</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Timestamp</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {history.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ py: 5, color: 'text.secondary' }}>
+                    No changes recorded yet. Save a config value to create the first entry.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                history.map((row, i) => (
+                  <TableRow key={i} hover>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>
+                      {CONFIG_META[row.key]?.label || row.key}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: 12, color: 'text.secondary', fontFamily: 'monospace' }}>
+                      {row.old_value ?? <em style={{ color: '#9CA3AF' }}>—</em>}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: 12, fontFamily: 'monospace', color: '#2563EB', fontWeight: 600 }}>
+                      {row.new_value}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: 12 }}>{row.changed_by || '—'}</TableCell>
+                    <TableCell sx={{ fontSize: 12, whiteSpace: 'nowrap' }}>
+                      {new Date(row.changed_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </Box>
   );
 }
@@ -512,22 +744,22 @@ function AuditLogTab({ token }) {
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [token, setToken] = useState(() => localStorage.getItem('uc45_admin_token') || null);
+  const [token, setToken] = useState(() => localStorage.getItem('aiph_admin_token') || null);
   const [adminUser, setAdminUser] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('uc45_admin_user')); } catch { return null; }
+    try { return JSON.parse(localStorage.getItem('aiph_admin_user')); } catch { return null; }
   });
   const [tab, setTab] = useState(0);
 
   const handleLogin = (accessToken, user) => {
-    localStorage.setItem('uc45_admin_token', accessToken);
-    localStorage.setItem('uc45_admin_user', JSON.stringify(user));
+    localStorage.setItem('aiph_admin_token', accessToken);
+    localStorage.setItem('aiph_admin_user', JSON.stringify(user));
     setToken(accessToken);
     setAdminUser(user);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('uc45_admin_token');
-    localStorage.removeItem('uc45_admin_user');
+    localStorage.removeItem('aiph_admin_token');
+    localStorage.removeItem('aiph_admin_user');
     setToken(null);
     setAdminUser(null);
   };

@@ -859,7 +859,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
               <div class="adm-card"><div class="adm-card-label">Active vet sessions</div><div class="adm-card-value" style="color:#7C3AED;">3</div></div>
             </div>
             <div style="font-size:14px;font-weight:600;color:#111827;margin-bottom:12px;">Health indicators</div>
-            <div class="adm-progress-panel">
+            <div class="adm-progress-panel" style="margin-bottom:24px;">
               <div class="adm-progress-row">
                 <div class="adm-progress-label">Avg confidence</div>
                 <div class="adm-progress-track"><div class="adm-progress-fill" style="width:73%;background:#16A34A;"></div></div>
@@ -870,6 +870,77 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
                 <div class="adm-progress-track"><div class="adm-progress-fill" style="width:12.8%;background:#D97706;"></div></div>
                 <div class="adm-progress-pct" style="color:#D97706;">12.8%</div>
               </div>
+            </div>
+
+            <!-- Charts row -->
+            <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:24px;">
+              <!-- Urgency donut -->
+              <div style="flex:1;min-width:260px;background:#fff;border-radius:10px;border:1px solid #E5E7EB;padding:18px 22px;">
+                <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:14px;">Urgency breakdown (today)</div>
+                <div style="display:flex;align-items:center;gap:20px;">
+                  <svg width="110" height="110" viewBox="0 0 120 120" style="flex-shrink:0;">
+                    <!-- EMERGENCY 5/47 ≈ 38° -->
+                    <path d="M60,8 A52,52 0 0,1 108,68 L88,51 A32,32 0 0,0 60,28 Z" fill="#DC2626"/>
+                    <!-- URGENT 12/47 ≈ 92° -->
+                    <path d="M108,68 A52,52 0 0,1 22,98 L37,82 A32,32 0 0,0 88,51 Z" fill="#D97706"/>
+                    <!-- MONITOR 18/47 ≈ 138° -->
+                    <path d="M22,98 A52,52 0 0,1 60,8 L60,28 A32,32 0 0,0 37,82 Z" fill="#2563EB"/>
+                    <!-- SAFE 10/47 -->
+                    <circle cx="60" cy="60" r="32" fill="#fff"/>
+                    <text x="60" y="55" text-anchor="middle" font-size="11" fill="#6B7280">Total</text>
+                    <text x="60" y="72" text-anchor="middle" font-size="19" font-weight="bold" fill="#111827">47</text>
+                  </svg>
+                  <div style="font-size:11px;line-height:1.9;">
+                    <div><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#DC2626;margin-right:6px;"></span>EMERGENCY: <strong>5</strong></div>
+                    <div><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#D97706;margin-right:6px;"></span>URGENT: <strong>12</strong></div>
+                    <div><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#2563EB;margin-right:6px;"></span>MONITOR: <strong>18</strong></div>
+                    <div><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#16A34A;margin-right:6px;"></span>SAFE: <strong>10</strong></div>
+                    <div><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#6B7280;margin-right:6px;"></span>UNDETERMINED: <strong>2</strong></div>
+                  </div>
+                </div>
+              </div>
+              <!-- Confidence distribution -->
+              <div style="flex:1;min-width:260px;background:#fff;border-radius:10px;border:1px solid #E5E7EB;padding:18px 22px;">
+                <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:14px;">Confidence distribution (30 days)</div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
+                  <span style="font-size:11px;color:#6B7280;width:58px;font-family:monospace;">0–40%</span>
+                  <div style="flex:1;height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden;"><div style="width:9%;height:100%;background:#DC2626;border-radius:4px;"></div></div>
+                  <span style="font-size:11px;font-weight:600;color:#DC2626;width:22px;">4</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
+                  <span style="font-size:11px;color:#6B7280;width:58px;font-family:monospace;">40–60%</span>
+                  <div style="flex:1;height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden;"><div style="width:36%;height:100%;background:#D97706;border-radius:4px;"></div></div>
+                  <span style="font-size:11px;font-weight:600;color:#D97706;width:22px;">16</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
+                  <span style="font-size:11px;color:#6B7280;width:58px;font-family:monospace;">60–70%</span>
+                  <div style="flex:1;height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden;"><div style="width:68%;height:100%;background:#F59E0B;border-radius:4px;"></div></div>
+                  <span style="font-size:11px;font-weight:600;color:#F59E0B;width:22px;">30</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
+                  <span style="font-size:11px;color:#6B7280;width:58px;font-family:monospace;">70–80%</span>
+                  <div style="flex:1;height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden;"><div style="width:100%;height:100%;background:#16A34A;border-radius:4px;"></div></div>
+                  <span style="font-size:11px;font-weight:600;color:#16A34A;width:22px;">44</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="font-size:11px;color:#6B7280;width:58px;font-family:monospace;">80–100%</span>
+                  <div style="flex:1;height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden;"><div style="width:52%;height:100%;background:#059669;border-radius:4px;"></div></div>
+                  <span style="font-size:11px;font-weight:600;color:#059669;width:22px;">23</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent triage events table -->
+            <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;">Recent triage events</div>
+            <div class="adm-table-wrap">
+              <table class="adm-table">
+                <thead><tr><th>ID</th><th>Urgency</th><th>Confidence</th><th>Fallback</th><th>Timestamp</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="adm-id">a3f9c1d2…</span></td><td><span class="adm-urg-chip" style="background:#FEF2F2;color:#DC2626;border-color:#DC2626;">EMERGENCY</span></td><td><div class="adm-conf-wrap"><div class="adm-conf-bar"><div class="adm-conf-fill" style="width:82%;background:#16A34A;"></div></div><span style="font-size:11px;font-weight:600;color:#16A34A;">82%</span></div></td><td><span class="adm-fb-no">No</span></td><td style="font-size:11px;">24 Apr 09:15</td></tr>
+                  <tr><td><span class="adm-id">b7e2a4f1…</span></td><td><span class="adm-urg-chip" style="background:#F0FDF4;color:#16A34A;border-color:#16A34A;">SAFE</span></td><td><div class="adm-conf-wrap"><div class="adm-conf-bar"><div class="adm-conf-fill" style="width:76%;background:#16A34A;"></div></div><span style="font-size:11px;font-weight:600;color:#16A34A;">76%</span></div></td><td><span class="adm-fb-no">No</span></td><td style="font-size:11px;">18 Apr 15:42</td></tr>
+                  <tr><td><span class="adm-id">c1d8b3e7…</span></td><td><span class="adm-urg-chip" style="background:#FFFBEB;color:#D97706;border-color:#D97706;">URGENT</span></td><td><div class="adm-conf-wrap"><div class="adm-conf-bar"><div class="adm-conf-fill" style="width:71%;background:#D97706;"></div></div><span style="font-size:11px;font-weight:600;color:#D97706;">71%</span></div></td><td><span class="adm-fb-no">No</span></td><td style="font-size:11px;">10 Apr 11:05</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -911,6 +982,40 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
             <div class="adm-config-row">
               <div class="adm-config-left"><div class="adm-config-label">Prompt version ID</div><div class="adm-config-desc">Active prompt template version for AI modules. Recorded in every audit log entry.</div></div>
               <div class="adm-config-right"><input class="adm-config-input" value="PROMPT_V1" style="width:150px;" readonly><button class="adm-save-btn" onclick="admSave(this)">Save</button></div>
+            </div>
+
+            <hr style="border:none;border-top:1px solid #E5E7EB;margin:28px 0 20px;">
+            <div style="font-size:16px;font-weight:600;color:#111827;margin-bottom:4px;">Change history</div>
+            <div style="font-size:12px;color:#6B7280;margin-bottom:16px;">Last 10 configuration changes — who changed what and when.</div>
+            <div class="adm-table-wrap">
+              <table class="adm-table">
+                <thead>
+                  <tr><th>Parameter</th><th>Old value</th><th>New value</th><th>Changed by</th><th>Timestamp</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="font-weight:600;">Confidence threshold</td>
+                    <td style="font-family:monospace;font-size:11px;color:#6B7280;">0.60</td>
+                    <td style="font-family:monospace;font-size:11px;color:#2563EB;font-weight:600;">0.65</td>
+                    <td style="font-size:12px;">admin@aiph.com</td>
+                    <td style="font-size:11px;">24 Apr 10:32</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600;">Rate limit (requests / hour)</td>
+                    <td style="font-family:monospace;font-size:11px;color:#6B7280;">10</td>
+                    <td style="font-family:monospace;font-size:11px;color:#2563EB;font-weight:600;">15</td>
+                    <td style="font-size:12px;">admin@aiph.com</td>
+                    <td style="font-size:11px;">23 Apr 14:05</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600;">GPT-4o timeout (seconds)</td>
+                    <td style="font-family:monospace;font-size:11px;color:#6B7280;">4.0</td>
+                    <td style="font-family:monospace;font-size:11px;color:#2563EB;font-weight:600;">4.5</td>
+                    <td style="font-size:12px;">admin@aiph.com</td>
+                    <td style="font-size:11px;">20 Apr 09:17</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -1022,8 +1127,8 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
           <h3>🖥 Admin panel features</h3>
           <ul>
             <li><span>ADM-01</span>Login · JWT Bearer auth</li>
-            <li><span>ADM-02</span>Dashboard · 4 metric cards + health bars</li>
-            <li><span>ADM-03</span>Config · 5 runtime keys, live save</li>
+            <li><span>ADM-02</span>Dashboard · cards + bars + donut + recent table ✅</li>
+            <li><span>ADM-03</span>Config · 5 keys + change history table ✅</li>
             <li><span>ADM-04</span>Audit log · filters, table, CSV export</li>
           </ul>
           <hr>
@@ -1031,6 +1136,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
             <li><span>Auth</span>POST /api/v1/auth/login</li>
             <li><span>Metrics</span>GET /admin/metrics</li>
             <li><span>Config</span>GET/PUT /admin/config</li>
+            <li><span>History</span>GET /admin/config/history ✅</li>
             <li><span>Audit</span>GET /admin/audit-log</li>
             <li><span>Export</span>GET /admin/audit-log/export</li>
           </ul>

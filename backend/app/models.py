@@ -98,6 +98,17 @@ class Config(Base):
     updated_by: Mapped[str | None] = mapped_column(String(36), nullable=True)
 
 
+class ConfigChangeHistory(Base):
+    __tablename__ = "config_change_history"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    key: Mapped[str] = mapped_column(String(60), index=True)
+    old_value: Mapped[str | None] = mapped_column(Text, nullable=True)
+    new_value: Mapped[str] = mapped_column(Text)
+    changed_by: Mapped[str | None] = mapped_column(String(254), nullable=True)
+    changed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 class VetSession(Base):
     __tablename__ = "vet_sessions"
 

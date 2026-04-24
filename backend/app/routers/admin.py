@@ -1,6 +1,6 @@
 import csv
 import io
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
 
 from app.database import get_db
-from app.models import AuditLog, Config, TriageEvent, VetSession, User
+from app.models import AuditLog, Config, ConfigChangeHistory, TriageEvent, VetSession, User
 from app.deps import get_admin_user
 
 router = APIRouter()
@@ -38,6 +38,7 @@ async def get_metrics(
 ):
     today = datetime.utcnow().date()
     today_start = datetime.combine(today, datetime.min.time())
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
 
     triage_today = await db.scalar(
         select(func.count(TriageEvent.id)).where(TriageEvent.created_at >= today_start)
@@ -57,11 +58,56 @@ async def get_metrics(
 
     fallback_rate = (fallback_count / triage_today) if triage_today else 0.0
 
+    # Urgency distribution — counts per tier for today
+    urg_result = await db.execute(
+        select(TriageEvent.urgency_tier, func.count(TriageEvent.id))
+        .where(TriageEvent.created_at >= today_start)
+        .group_by(TriageEvent.urgency_tier)
+    )
+    urgency_distribution = {tier: count for tier, count in urg_result.all()}
+
+    # Confidence distribution — bucketed over last 30 days
+    conf_result = await db.execute(
+        select(TriageEvent.confidence_score).where(TriageEvent.created_at >= thirty_days_ago)
+    )
+    scores = [r[0] for r in conf_result.all()]
+    confidence_buckets = {"0-40": 0, "40-60": 0, "60-70": 0, "70-80": 0, "80-100": 0}
+    for s in scores:
+        pct = (s or 0) * 100
+        if pct < 40:
+            confidence_buckets["0-40"] += 1
+        elif pct < 60:
+            confidence_buckets["40-60"] += 1
+        elif pct < 70:
+            confidence_buckets["60-70"] += 1
+        elif pct < 80:
+            confidence_buckets["70-80"] += 1
+        else:
+            confidence_buckets["80-100"] += 1
+
+    # Recent triage events — last 5
+    recent_result = await db.execute(
+        select(TriageEvent).order_by(TriageEvent.created_at.desc()).limit(5)
+    )
+    recent_triages = [
+        {
+            "id": r.id[:8],
+            "urgency_tier": r.urgency_tier,
+            "confidence_score": r.confidence_score,
+            "fallback_triggered": r.fallback_triggered,
+            "created_at": r.created_at.isoformat(),
+        }
+        for r in recent_result.scalars().all()
+    ]
+
     return {
         "triage_requests_today": triage_today or 0,
         "avg_confidence": round(avg_conf or 0.0, 4),
         "fallback_rate": round(fallback_rate, 4),
         "active_sessions": active_sessions or 0,
+        "urgency_distribution": urgency_distribution,
+        "confidence_buckets": confidence_buckets,
+        "recent_triages": recent_triages,
     }
 
 
@@ -78,12 +124,22 @@ async def update_config(
 
     result = await db.execute(select(Config).where(Config.key == body.key))
     row = result.scalar_one_or_none()
+    old_value = row.value if row else None
+
     if row:
         row.value = body.value
         row.updated_at = datetime.utcnow()
         row.updated_by = admin.id
     else:
         db.add(Config(key=body.key, value=body.value, updated_by=admin.id))
+
+    # Record in change history (FRS §5.3.2)
+    db.add(ConfigChangeHistory(
+        key=body.key,
+        old_value=old_value,
+        new_value=body.value,
+        changed_by=admin.email,
+    ))
 
     await db.commit()
     return {"message": f"Config '{body.key}' updated to '{body.value}'"}
@@ -97,6 +153,29 @@ async def get_config_values(
     result = await db.execute(select(Config))
     rows = result.scalars().all()
     return {r.key: r.value for r in rows}
+
+
+@router.get("/config/history")
+async def get_config_history(
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(get_admin_user),
+):
+    result = await db.execute(
+        select(ConfigChangeHistory)
+        .order_by(ConfigChangeHistory.changed_at.desc())
+        .limit(10)
+    )
+    rows = result.scalars().all()
+    return [
+        {
+            "key": r.key,
+            "old_value": r.old_value,
+            "new_value": r.new_value,
+            "changed_by": r.changed_by,
+            "changed_at": r.changed_at.isoformat(),
+        }
+        for r in rows
+    ]
 
 
 # ─── Audit Log ───────────────────────────────────────────────────────────────
