@@ -11,7 +11,7 @@ from sqlalchemy import select
 
 from app.database import get_db
 from app.models import Pet, TriageEvent, AuditLog, User
-from app.deps import get_current_user, get_config
+from app.deps import get_current_user, get_config, check_triage_rate_limit
 from app.ai.symptom import run_symptom_module
 from app.ai.image import run_image_module
 from app.ai.breed import run_breed_module
@@ -41,6 +41,7 @@ async def submit_triage(
     image: Optional[UploadFile] = File(None),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
+    _: None = Depends(check_triage_rate_limit),
 ):
     # Validate description length
     if len(description) < 20:
