@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UC45 — Mobile App Wireframe v2</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#0f172a; display:flex; min-height:100vh; }
+
+  /* ── Sidebar ── */
+  .sidebar { width:230px; background:#1e293b; padding:20px 0; overflow-y:auto; position:fixed; top:0; left:0; height:100vh; z-index:10; border-right:1px solid #334155; }
+  .sidebar-logo { padding:0 16px 16px; border-bottom:1px solid #334155; margin-bottom:8px; }
+  .sidebar-logo .app-name { color:#f1f5f9; font-size:14px; font-weight:700; }
+  .sidebar-logo .app-sub  { color:#64748b; font-size:11px; margin-top:2px; }
+  .sidebar-title { color:#64748b; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; padding:8px 16px 6px; }
+  .sidebar-item { display:flex; align-items:center; gap:9px; padding:9px 16px; color:#94a3b8; font-size:12px; cursor:pointer; transition:all 0.15s; border-left:3px solid transparent; }
+  .sidebar-item:hover { background:#334155; color:#e2e8f0; }
+  .sidebar-item.active { background:rgba(59,130,246,0.12); color:#60a5fa; border-left-color:#3b82f6; }
+  .sidebar-item .badge { background:#334155; border-radius:4px; padding:1px 6px; font-size:10px; color:#64748b; margin-left:auto; }
+  .sidebar-item.active .badge { background:#1d4ed8; color:#bfdbfe; }
+  .sidebar-divider { border:none; border-top:1px solid #2d3748; margin:6px 0; }
+  .sidebar-group { padding:0 8px; }
+
+  /* ── Canvas ── */
+  .canvas { margin-left:230px; flex:1; display:flex; flex-direction:column; align-items:center; padding:36px 24px 60px; }
+  .canvas-header { text-align:center; margin-bottom:28px; }
+  .canvas-header h1 { color:#f1f5f9; font-size:20px; font-weight:700; }
+  .canvas-header p  { color:#64748b; font-size:12px; margin-top:4px; }
+
+  /* ── Phone ── */
+  .phone-wrap { display:flex; gap:36px; align-items:flex-start; flex-wrap:wrap; justify-content:center; }
+  .phone { width:375px; background:#fff; border-radius:46px; box-shadow:0 0 0 11px #1e293b, 0 0 0 13px #334155, 0 32px 80px rgba(0,0,0,.7); overflow:hidden; position:relative; flex-shrink:0; }
+  .phone-notch { position:absolute; top:0; left:50%; transform:translateX(-50%); width:120px; height:30px; background:#1e293b; border-radius:0 0 20px 20px; z-index:99; }
+  .phone-screen { min-height:812px; display:flex; flex-direction:column; overflow:hidden; }
+  .screen { flex:1; display:none; flex-direction:column; }
+  .screen.active { display:flex; }
+
+  /* ── Tokens ── */
+  :root {
+    --primary:#2563EB; --bg:#F9FAFB; --surface:#FFFFFF; --border:#E5E7EB;
+    --text:#111827; --muted:#6B7280; --error:#EF4444;
+    --emergency:#DC2626; --urgent:#D97706; --monitor:#2563EB; --safe:#16A34A;
+  }
+
+  /* ── Shared ── */
+  .status-bar { height:44px; display:flex; align-items:flex-end; justify-content:space-between; padding:0 22px 6px; font-size:12px; font-weight:600; flex-shrink:0; }
+  .offline-banner { background:#F59E0B; color:#fff; text-align:center; padding:7px; font-size:12px; font-weight:600; flex-shrink:0; }
+  .nav-header { display:flex; align-items:center; padding:10px 14px; background:#fff; border-bottom:1px solid var(--border); flex-shrink:0; gap:10px; }
+  .nav-back { width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; border-radius:8px; color:var(--primary); font-size:18px; transition:.1s; }
+  .nav-back:hover { background:#eff6ff; }
+  .nav-title { font-size:15px; font-weight:600; color:var(--text); flex:1; }
+  .scroll-area { flex:1; overflow-y:auto; background:var(--bg); padding:18px; }
+  .scroll-area::-webkit-scrollbar { width:0; }
+
+  .btn-primary { background:var(--primary); color:#fff; border:none; border-radius:10px; padding:13px; font-size:14px; font-weight:600; cursor:pointer; width:100%; min-height:46px; transition:.15s; }
+  .btn-primary:hover { opacity:.9; }
+  .btn-primary:disabled { background:#9CA3AF; cursor:default; }
+  .btn-outline { background:#fff; color:var(--primary); border:1.5px solid var(--primary); border-radius:10px; padding:13px; font-size:14px; font-weight:600; cursor:pointer; width:100%; min-height:46px; transition:.15s; }
+  .btn-outline:hover { background:#eff6ff; }
+  .btn-ghost { background:none; border:none; color:var(--primary); font-size:13px; cursor:pointer; padding:8px; width:100%; text-align:center; }
+  .input { border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:14px; width:100%; background:#fff; margin-bottom:10px; outline:none; font-family:inherit; }
+  .input:focus { border-color:var(--primary); }
+  .label { font-size:12px; font-weight:500; color:var(--text); margin-bottom:4px; display:block; }
+  .error-box { background:#FEE2E2; color:var(--error); padding:10px 12px; border-radius:8px; font-size:12px; margin-bottom:10px; }
+  .card { background:#fff; border-radius:10px; padding:14px; border:1px solid var(--border); margin-bottom:10px; }
+  .card-title { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:8px; }
+  .section-title { font-size:13px; font-weight:600; color:var(--text); margin:14px 0 9px; }
+  .link { color:var(--primary); font-size:13px; text-align:center; display:block; margin-top:10px; cursor:pointer; }
+  .chip-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .chip { border:1px solid var(--border); border-radius:20px; padding:5px 12px; font-size:12px; color:var(--text); cursor:pointer; background:#fff; transition:.1s; }
+  .chip.active { background:var(--primary); border-color:var(--primary); color:#fff; }
+
+  /* ── Urgency ── */
+  .urgency-banner { padding:16px; border-radius:10px; text-align:center; margin-bottom:12px; color:#fff; }
+  .urgency-icon { font-size:26px; margin-bottom:3px; }
+  .urgency-tier { font-size:19px; font-weight:700; margin-bottom:2px; }
+  .urgency-msg  { font-size:13px; opacity:.92; }
+  .u-emergency { background:var(--emergency); }
+  .u-urgent    { background:var(--urgent); }
+  .u-monitor   { background:var(--monitor); }
+  .u-safe      { background:var(--safe); }
+  .u-unknown   { background:#6B7280; }
+
+  /* ── Confidence bar ── */
+  .conf-label { font-size:12px; color:var(--muted); margin-bottom:4px; }
+  .conf-track { background:#E5E7EB; border-radius:6px; height:9px; overflow:hidden; margin-bottom:2px; }
+  .conf-fill  { height:100%; border-radius:6px; }
+  .conf-pct   { text-align:right; font-size:12px; font-weight:600; color:var(--text); margin-bottom:10px; }
+
+  /* ── Onboarding ── */
+  #s-onboarding { background:linear-gradient(155deg,#eff6ff 0%,#f0fdf4 100%); }
+  .ob-dots { display:flex; justify-content:center; gap:6px; padding:18px 0 0; }
+  .ob-dot  { width:8px; height:8px; border-radius:4px; background:#CBD5E1; transition:.2s; }
+  .ob-dot.active { background:var(--primary); width:22px; }
+  .ob-body { flex:1; display:flex; flex-direction:column; justify-content:center; padding:28px 26px 0; }
+  .ob-title { font-size:25px; font-weight:700; color:var(--text); margin-bottom:12px; line-height:1.25; }
+  .ob-desc  { font-size:14px; color:var(--muted); line-height:1.65; }
+  .ob-actions { padding:20px 18px 36px; display:flex; flex-direction:column; gap:9px; }
+
+  /* ── Home ── */
+  .home-header { padding:14px 18px 12px; background:#fff; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); flex-shrink:0; }
+  .home-greeting { font-size:19px; font-weight:700; color:var(--text); }
+  .home-logout { font-size:12px; color:var(--muted); cursor:pointer; padding:4px 8px; border-radius:6px; transition:.1s; }
+  .home-logout:hover { background:#fee2e2; color:var(--error); }
+  .pet-card { background:var(--primary); border-radius:14px; padding:16px 18px; margin-bottom:18px; color:#fff; }
+  .pet-card-name { font-size:19px; font-weight:700; margin-bottom:4px; }
+  .pet-card-meta { font-size:13px; opacity:.85; line-height:1.6; }
+  .action-card { background:#fff; border-radius:12px; padding:13px 14px; display:flex; align-items:center; gap:12px; margin-bottom:9px; border:1px solid var(--border); cursor:pointer; transition:all .15s; }
+  .action-card:hover { border-color:var(--primary); background:#eff6ff; }
+  .action-icon  { font-size:24px; flex-shrink:0; }
+  .action-title { font-size:13px; font-weight:600; color:var(--text); }
+  .action-desc  { font-size:11px; color:var(--muted); margin-top:2px; }
+
+  /* ── Symptom ── */
+  .photo-row { display:flex; gap:8px; margin-bottom:10px; }
+  .photo-slot { flex:1; aspect-ratio:1; border:1.5px dashed var(--border); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:22px; background:#fff; cursor:pointer; position:relative; overflow:hidden; transition:.1s; }
+  .photo-slot.filled { border-style:solid; border-color:#10B981; background:#f0fdf4; }
+  .photo-slot .del { position:absolute; top:3px; right:3px; background:rgba(0,0,0,.55); border-radius:8px; width:17px; height:17px; display:flex; align-items:center; justify-content:center; font-size:9px; color:#fff; cursor:pointer; }
+  .disclaimer { font-size:10px; color:var(--muted); text-align:center; margin-top:10px; line-height:1.5; font-style:italic; }
+
+  /* ── Processing ── */
+  .proc-step { display:flex; align-items:center; gap:11px; margin-bottom:13px; }
+  .proc-dot  { width:20px; text-align:center; font-size:15px; flex-shrink:0; }
+  .proc-text { font-size:13px; color:var(--muted); }
+  .proc-text.active { color:var(--text); font-weight:600; }
+  .proc-text.done   { color:var(--safe); }
+
+  /* ── Result modules ── */
+  .expand-btn  { text-align:center; color:var(--primary); font-size:12px; padding:7px; cursor:pointer; }
+  .module-row  { padding:7px 0; border-bottom:1px solid var(--border); }
+  .module-row:last-child { border-bottom:none; }
+  .module-label { font-size:10px; color:var(--muted); margin-bottom:2px; }
+  .module-val   { font-size:12px; color:var(--text); font-weight:500; }
+  .module-conf  { font-size:11px; color:var(--primary); margin-top:2px; }
+
+  /* ── Vet booking ── */
+  .vet-card { background:#fff; border-radius:12px; padding:13px; margin-bottom:9px; border:2px solid var(--border); cursor:pointer; display:flex; align-items:center; gap:11px; transition:.15s; }
+  .vet-card.selected { border-color:var(--primary); background:#eff6ff; }
+  .vet-avatar { width:42px; height:42px; border-radius:21px; background:var(--primary); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:13px; flex-shrink:0; }
+  .vet-name  { font-size:13px; font-weight:600; color:var(--text); }
+  .vet-spec  { font-size:11px; color:var(--muted); margin-top:2px; }
+  .vet-meta  { display:flex; gap:10px; margin-top:4px; font-size:11px; color:var(--text); }
+  .vet-check { margin-left:auto; font-size:18px; color:var(--primary); }
+
+  /* ── Vet Call ── */
+  #s-vetcall { background:#111827; }
+  .call-remote { flex:1; background:#1f2937; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; min-height:460px; }
+  .call-avatar { font-size:60px; margin-bottom:10px; }
+  .call-name   { color:#fff; font-size:15px; font-weight:600; }
+  .call-status { color:#9ca3af; font-size:12px; margin-top:3px; }
+  .call-local  { position:absolute; bottom:12px; right:12px; width:78px; height:108px; background:#374151; border-radius:8px; border:2px solid #fff; display:flex; align-items:center; justify-content:center; font-size:22px; }
+  .call-controls { background:#1f2937; padding:14px 24px 26px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .call-timer { color:#fff; font-size:18px; font-weight:600; }
+  .call-btns  { display:flex; align-items:center; gap:18px; }
+  .call-btn   { width:50px; height:50px; border-radius:25px; background:#374151; border:none; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:.15s; }
+  .call-btn.active { background:#6B7280; }
+  .call-btn:hover  { opacity:.85; }
+  .call-end   { background:#DC2626; width:62px; height:62px; border-radius:31px; font-size:26px; }
+  .call-end:hover { background:#b91c1c; }
+
+  /* ── Rating ── */
+  .rating-screen { flex:1; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px; }
+  .star { font-size:38px; cursor:pointer; color:#D1D5DB; transition:.15s; }
+  .star.on { color:#F59E0B; }
+
+  /* ── History ── */
+  .history-item { background:#fff; border-radius:12px; padding:11px 13px; display:flex; align-items:center; gap:10px; margin-bottom:7px; border:1px solid var(--border); cursor:pointer; transition:.1s; }
+  .history-item:hover { border-color:var(--primary); }
+  .history-badge { border-radius:7px; padding:5px 6px; text-align:center; min-width:54px; flex-shrink:0; }
+  .history-badge-icon { font-size:15px; }
+  .history-badge-text { font-size:9px; font-weight:700; color:#fff; margin-top:1px; }
+  .history-info { flex:1; }
+  .history-pet  { font-size:12px; font-weight:600; color:var(--text); }
+  .history-date { font-size:10px; color:var(--muted); margin-top:2px; }
+  .history-right { text-align:right; }
+  .history-conf  { font-size:15px; font-weight:700; color:var(--text); }
+  .history-conf-label { font-size:10px; color:var(--muted); }
+  .history-chevron { color:var(--muted); font-size:17px; margin-left:4px; }
+
+  /* ── Info panel ── */
+  .info-panel { background:#1e293b; border:1px solid #334155; border-radius:14px; padding:18px 20px; max-width:280px; }
+  .info-panel h3 { color:#f1f5f9; font-size:12px; font-weight:700; margin-bottom:10px; letter-spacing:.3px; }
+  .info-panel ul { list-style:none; display:flex; flex-direction:column; gap:6px; }
+  .info-panel li { color:#94a3b8; font-size:11px; display:flex; gap:8px; line-height:1.5; }
+  .info-panel li span { color:#60a5fa; white-space:nowrap; }
+  .info-panel hr { border:none; border-top:1px solid #334155; margin:12px 0; }
+  .colour-dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:4px; vertical-align:middle; }
+
+  /* ── Bug-fix badge ── */
+  .fix-badge { display:inline-block; background:#16A34A; color:#fff; font-size:9px; font-weight:700; padding:2px 6px; border-radius:4px; margin-left:4px; vertical-align:middle; letter-spacing:.5px; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════ SIDEBAR ════════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="app-name">🐾 UC45</div>
+    <div class="app-sub">AI Pet Health · Wireframe v2</div>
+  </div>
+
+  <div class="sidebar-title">Auth</div>
+  <div class="sidebar-group">
+    <div class="sidebar-item active" onclick="go('s-onboarding',this)"><span>🚀</span>Onboarding <span class="badge">MOB-01</span></div>
+    <div class="sidebar-item" onclick="go('s-register',this)"><span>📝</span>Register <span class="badge">MOB-02</span></div>
+    <div class="sidebar-item" onclick="go('s-login',this)"><span>🔑</span>Login <span class="badge">MOB-03</span></div>
+    <div class="sidebar-item" onclick="go('s-forgot',this)"><span>✉️</span>Forgot Password <span class="badge">FR-05</span></div>
+  </div>
+
+  <hr class="sidebar-divider">
+  <div class="sidebar-title">Core</div>
+  <div class="sidebar-group">
+    <div class="sidebar-item" onclick="go('s-home',this)"><span>🏠</span>Home Dashboard <span class="badge">MOB-04</span></div>
+    <div class="sidebar-item" onclick="go('s-petprofile',this)"><span>🐾</span>Pet Profile <span class="badge">MOB-05</span></div>
+  </div>
+
+  <hr class="sidebar-divider">
+  <div class="sidebar-title">Triage Flow</div>
+  <div class="sidebar-group">
+    <div class="sidebar-item" onclick="go('s-symptom',this)"><span>🔍</span>Symptom Input <span class="badge">MOB-06</span></div>
+    <div class="sidebar-item" onclick="go('s-processing',this)"><span>⏳</span>Processing <span class="badge">MOB-07</span></div>
+    <div class="sidebar-item" onclick="go('s-result-emergency',this)"><span>🚨</span>Result — Emergency <span class="badge">MOB-08</span></div>
+    <div class="sidebar-item" onclick="go('s-result-urgent',this)"><span>🕐</span>Result — Urgent <span class="badge">MOB-08</span></div>
+    <div class="sidebar-item" onclick="go('s-result-monitor',this)"><span>👁</span>Result — Monitor <span class="badge">MOB-08</span></div>
+    <div class="sidebar-item" onclick="go('s-result-safe',this)"><span>✅</span>Result — Safe <span class="badge">MOB-08</span></div>
+    <div class="sidebar-item" onclick="go('s-fallback',this)"><span>🤔</span>Fallback <span class="badge">MOB-09</span></div>
+  </div>
+
+  <hr class="sidebar-divider">
+  <div class="sidebar-title">Vet Services</div>
+  <div class="sidebar-group">
+    <div class="sidebar-item" onclick="go('s-vetbooking',this)"><span>📅</span>Vet Booking <span class="badge">MOB-10</span></div>
+    <div class="sidebar-item" onclick="go('s-vetcall',this)"><span>📹</span>Vet Call (WebRTC) <span class="badge">MOB-11</span></div>
+    <div class="sidebar-item" onclick="go('s-rating',this)"><span>⭐</span>Post-call Rating <span class="badge">MOB-11</span></div>
+    <div class="sidebar-item" onclick="go('s-history',this)"><span>📋</span>Health History <span class="badge">MOB-12</span></div>
+  </div>
+</nav>
+
+<!-- ════════════════ CANVAS ════════════════ -->
+<main class="canvas">
+  <div class="canvas-header">
+    <h1>UC45 — AI Pet Health Monitor &amp; Vet Telemedicine</h1>
+    <p>Interactive wireframe · All 17 screens · All buttons are clickable · v2 — bugs fixed</p>
+  </div>
+
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="phone-notch"></div>
+
+      <!-- ══════════════ ONBOARDING ══════════════ -->
+      <div class="phone-screen screen active" id="s-onboarding" style="background:linear-gradient(155deg,#eff6ff 0%,#f0fdf4 100%);">
+        <div class="status-bar" style="color:#1e293b;background:transparent;">
+          <span>9:41</span><span>▲▲▲ 🔋</span>
+        </div>
+        <div id="ob0" style="flex:1;display:flex;flex-direction:column;">
+          <div class="ob-dots"><div class="ob-dot active"></div><div class="ob-dot"></div><div class="ob-dot"></div></div>
+          <div class="ob-body">
+            <div style="font-size:52px;margin-bottom:16px;">🐾</div>
+            <div class="ob-title">Welcome to UC45</div>
+            <div class="ob-desc">Artificial Intelligence (AI)-powered pet health triage — know in seconds if your pet needs a vet.</div>
+          </div>
+          <div class="ob-actions">
+            <button class="btn-primary" onclick="obStep(1)">Next →</button>
+          </div>
+        </div>
+        <div id="ob1" style="flex:1;display:none;flex-direction:column;">
+          <div class="ob-dots"><div class="ob-dot"></div><div class="ob-dot active"></div><div class="ob-dot"></div></div>
+          <div class="ob-body">
+            <div style="font-size:52px;margin-bottom:16px;">🔬</div>
+            <div class="ob-title">How it works</div>
+            <div class="ob-desc">Describe symptoms and add a photo. Four AI specialist modules run simultaneously — result in under 5 seconds.</div>
+          </div>
+          <div class="ob-actions">
+            <button class="btn-primary" onclick="obStep(2)">Next →</button>
+            <button class="btn-ghost" onclick="gs('s-register')">Skip</button>
+          </div>
+        </div>
+        <div id="ob2" style="flex:1;display:none;flex-direction:column;">
+          <div class="ob-dots"><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot active"></div></div>
+          <div class="ob-body">
+            <div style="font-size:52px;margin-bottom:16px;">🔒</div>
+            <div class="ob-title">Privacy &amp; Safety</div>
+            <div class="ob-desc">Your data is encrypted. Every AI result includes a confidence score. When confidence is low, a real vet is one tap away.</div>
+          </div>
+          <div class="ob-actions">
+            <button class="btn-primary" onclick="gs('s-register')">Get Started</button>
+            <button class="btn-ghost" onclick="gs('s-login')">Already have an account? Log in</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ REGISTER ══════════════ -->
+      <div class="phone-screen screen" id="s-register">
+        <div class="status-bar" style="background:#fff;color:#111;border-bottom:1px solid var(--border);"><span>9:41</span><span>▲▲ 🔋</span></div>
+        <div class="nav-header"><div class="nav-back" onclick="gs('s-onboarding')">←</div><div class="nav-title">Create account</div></div>
+        <div class="scroll-area">
+          <label class="label">Full name</label>
+          <input class="input" value="Priya Sharma" readonly>
+          <label class="label">Email</label>
+          <input class="input" value="priya@example.com" readonly>
+          <label class="label">Phone number</label>
+          <input class="input" value="+91 98765 43210" readonly>
+          <label class="label">Password</label>
+          <input class="input" value="••••••••••" readonly>
+          <label class="label">Confirm password</label>
+          <input class="input" value="••••••••••" readonly>
+          <button class="btn-primary" onclick="gs('s-petprofile')" style="margin-top:4px">Register</button>
+          <a class="link" onclick="gs('s-login')">Already have an account? Log in</a>
+        </div>
+      </div>
+
+      <!-- ══════════════ LOGIN ══════════════ -->
+      <div class="phone-screen screen" id="s-login">
+        <div class="status-bar" style="background:#fff;color:#111;border-bottom:1px solid var(--border);"><span>9:41</span><span>▲▲ 🔋</span></div>
+        <div class="nav-header"><div class="nav-back" onclick="gs('s-onboarding')">←</div><div class="nav-title">Log in</div></div>
+        <div class="scroll-area" style="display:flex;flex-direction:column;justify-content:center;">
+          <label class="label">Email</label>
+          <input class="input" value="priya@example.com" readonly>
+          <label class="label">Password</label>
+          <input class="input" value="••••••••" readonly>
+          <div style="text-align:right;margin-bottom:14px;">
+            <a style="color:var(--primary);font-size:12px;cursor:pointer;" onclick="gs('s-forgot')">Forgot password?</a>
+          </div>
+          <button class="btn-primary" onclick="gs('s-home')">Log in</button>
+          <a class="link" onclick="gs('s-register')">Need an account? Register</a>
+        </div>
+      </div>
+
+      <!-- ══════════════ FORGOT PASSWORD ══════════════ -->
+      <div class="phone-screen screen" id="s-forgot">
+        <div class="status-bar" style="background:#fff;color:#111;border-bottom:1px solid var(--border);"><span>9:41</span><span>▲▲ 🔋</span></div>
+        <div class="nav-header"><div class="nav-back" onclick="gs('s-login')">←</div><div class="nav-title">Reset password</div></div>
+        <div class="scroll-area" style="display:flex;flex-direction:column;justify-content:center;" id="forgot-body">
+          <div style="text-align:center;font-size:44px;margin-bottom:14px;">📧</div>
+          <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px;">Reset password</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.65;">
+            Enter your email address and we will send you a reset link. The link expires after 30 minutes.
+          </div>
+          <label class="label">Email address</label>
+          <input class="input" value="priya@example.com" readonly>
+          <button class="btn-primary" onclick="forgotSent()">Send reset link</button>
+          <a class="link" onclick="gs('s-login')">Back to log in</a>
+        </div>
+      </div>
+
+      <!-- ══════════════ HOME ══════════════ -->
+      <div class="phone-screen screen" id="s-home" style="background:var(--bg);">
+        <div class="status-bar" style="background:#fff;color:#111;border-bottom:1px solid var(--border);"><span>9:41</span><span>▲▲ 🔋</span></div>
+        <div class="home-header">
+          <div class="home-greeting">Hello, Priya 👋</div>
+          <!-- FIX: logout now navigates to Onboarding (matches handleLogout in HomeScreen.js) -->
+          <div class="home-logout" onclick="gs('s-onboarding')">Log out</div>
+        </div>
+        <div class="scroll-area">
+          <div class="pet-card">
+            <div class="pet-card-name">🐕 Bruno</div>
+            <div class="pet-card-meta">Labrador Retriever · Dog<br>36 months · 28 kg</div>
+          </div>
+          <div class="section-title">Quick actions</div>
+          <div class="action-card" onclick="gs('s-symptom')">
+            <div class="action-icon">🔍</div>
+            <div><div class="action-title">Check symptoms</div><div class="action-desc">Get an Artificial Intelligence (AI) triage result in seconds</div></div>
+          </div>
+          <div class="action-card" onclick="gs('s-vetbooking')">
+            <div class="action-icon">📅</div>
+            <div><div class="action-title">Book a vet</div><div class="action-desc">Browse available veterinarians and book a slot</div></div>
+          </div>
+          <div class="action-card" onclick="gs('s-history')">
+            <div class="action-icon">📋</div>
+            <div><div class="action-title">Health history</div><div class="action-desc">View past triage results and vet consultations</div></div>
+          </div>
+          <div class="action-card" onclick="gs('s-petprofile')" style="border-style:dashed;">
+            <div class="action-icon">🐾</div>
+            <div><div class="action-title">Edit pet profile</div><div class="action-desc">Manage Bruno's details and breed information</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ PET PROFILE ══════════════ -->
+      <div class="phone-screen screen" id="s-petprofile">
+        <div class="status-bar" style="background:#fff;color:#111;border-bottom:1px solid var(--border);"><span>9:41</span><span>▲▲ 🔋</span></div>
+        <div class="nav-header"><div class="nav-back" onclick="gs('s-home')">←</div><div class="nav-title">Pet profile</div></div>
+        <div class="scroll-area">
+          <label class="label">Pet name *</label>
+          <input class="input" value="Bruno" readonly>
+          <label class="label">Species *</label>
+          <div class="chip-row">
+            <span class="chip active">Dog</span><span class="chip">Cat</span><span class="chip">Bird</span><span class="chip">Rabbit</span><span class="chip">Other</span>
+          </div>
+          <label class="label">Breed *</label>
+          <input class="input" value="Labrador Retriever" readonly>
+          <label class="label">Age (months)</label>
+          <input class="input" value="36" readonly>
+          <label class="label">Weight (kg)</label>
+          <input class="input" value="28.5" readonly>
+          <label class="label">Pre-existing conditions</label>
+          <div class="chip-row">
+            <span class="chip active">Arthritis</span><span class="chip">Diabetes</span><span class="chip">Allergies</span><span class="chip">Epilepsy</span>
+          </div>
+          <button class="btn-primary" onclick="gs('s-home')">Save pet profile</button>
+        </div>
+      </div>
+
+      <!-- ══════════════ SYMPTOM INPUT ══════════════ -->
+      <div class="phone-screen screen" id="s-symptom">
+        <div class="status-bar" style="background:#fff;color:#111;border-bottom:1px solid var(--border);"><span>9:41</span><span>▲▲ 🔋</span></div>
+        <div class="nav-header">
+          <div class="nav-back" onclick="gs('s-home')">←</div>
+          <div class="nav-title">Symptom checker</div>
+          <span style="font-size:11px;background:#eff6ff;color:var(--primary);padding:3px 8px;border-radius:12px;margin-left:auto;">Bruno</span>
+        </div>
+        <div class="scroll-area">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6;">Describe what you have noticed. The more detail you provide, the more accurate the result.</div>
+          <textarea class="input" rows="5" style="resize:none;font-family:inherit;" readonly>Limping on left front leg since this morning, not bearing weight. Whimpering when I touch the paw.</textarea>
+          <div style="text-align:right;font-size:11px;color:var(--muted);margin-top:-6px;margin-bottom:10px;">72 / 500</div>
+          <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:8px;">Add a photo for best results (optional)</div>
+          <div class="photo-row">
+            <div class="photo-slot filled">📷<div class="del">✕</div></div>
+            <div class="photo-slot">🖼</div>
+            <div class="photo-slot">🖼</div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:12px;font-style:italic;">💡 Tip: ensure the area is well-lit and in focus for accurate analysis.</div>
+          <button class="btn-primary" onclick="gs('s-processing')">Analyse symptoms</button>
+          <div class="disclaimer">Artificial Intelligence (AI)-generated results are not a substitute for professional veterinary diagnosis.</div>
+        </div>
+      </div>
+
+      <!-- ══════════════ PROCESSING ══════════════ -->
+      <div class="phone-screen screen" id="s-processing" style="background:var(--bg);">
+        <div class="status-bar" style="background:var(--bg);color:#111;"><span>9:41</span><span>▲▲ 🔋</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;">
+          <div style="font-size:52px;margin-bottom:18px;animation:spin 2s linear infinite;">🔬</div>
+          <div style="font-size:19px;font-weight:700;color:var(--text);margin-bottom:6px;text-align:center;">AI Analysis in progress</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:28px;text-align:center;">Please wait — estimated time under 5 seconds</div>
+          <div style="width:100%;">
+            <div class="proc-step"><span class="proc-dot" style="color:var(--safe);">✓</span><span class="proc-text done">Analysing your description...</span></div>
+            <div class="proc-step"><span class="proc-dot" style="color:var(--safe);">✓</span><span class="proc-text done">Examining the photo...</span></div>
+            <div class="proc-step"><span class="proc-dot" style="color:var(--primary);">●</span><span class="proc-text active">Checking breed risk profile...</span></div>
+            <div class="proc-step"><span class="proc-dot" style="color:#CBD5E1;">○</span><span class="proc-text">Calculating urgency...</span></div>
+          </div>
+          <div style="margin-top:28px;width:100%;display:flex;flex-direction:column;gap:8px;">
+            <div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:4px;">→ Jump to result:</div>
+            <button class="btn-primary" style="background:var(--emergency);" onclick="gs('s-result-emergency')">🚨 EMERGENCY result</button>
+            <button class="btn-primary" style="background:var(--urgent);" onclick="gs('s-result-urgent')">🕐 URGENT result</button>
+            <button class="btn-primary" style="background:var(--monitor);" onclick="gs('s-result-monitor')">👁 MONITOR result</button>
+            <button class="btn-outline" onclick="gs('s-result-safe')">✅ SAFE result</button>
+            <button class="btn-ghost" onclick="gs('s-fallback')">🤔 Fallback (low confidence)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ RESULT — EMERGENCY ══════════════ -->
+      <div class="phone-screen screen" id="s-result-emergency">
+        <div class="status-bar" style="background:#fff;color:#111;border-bottom:1px solid var(--border);"><span>9:41</span><span>▲▲ 🔋</span></div>
+        <div class="nav-header"><div class="nav-back" onclick="gs('s-home')">←</div><div class="nav-title">Triage result</div></div>
+        <div class="scroll-area">
+          <div class="urgency-banner u-emergency"><div class="urgency-icon">⚠</div><div class="urgency-tier">EMERGENCY</div><div class="urgency-msg">Seek emergency veterinary care immediately</div></div>
+          <div class="conf-label">Artificial Intelligence (AI) confidence</div>
+          <div class="conf-track"><div class="conf-fill" style="width:82%;background:#16A34A;"></div></div>
+          <div class="conf-pct">82%</div>
+          <div class="card"><div class="card-title">What our AI found</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Bruno shows signs of acute limb injury with weight-bearing inability. Visible swelling and pain response on touch indicates potential fracture or severe ligament damage requiring immediate veterinary assessment.</div></div>
+          <div class="card"><div class="card-title">Breed note</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Labrador Retrievers are prone to hip and elbow dysplasia. A limping episode combined with known arthritis significantly elevates concern for joint injury.</div></div>
+          <button class="btn-primary" onclick="gs('s-vetbooking')" style="margin-bottom:8px;">Book a vet now</button>
+          <div class="expand-btn" onclick="toggleMod('mod-em')">▼ How was this result generated?</div>
+          <div id="mod-em" style="display:none;" class="card">
+            <div class="module-row"><div class="module-label">Symptom analysis</div><div class="module-val">musculoskeletal</div><div class="module-conf">88% confidence</div></div>
+            <div class="module-row"><div class="module-label">Image analysis</div><div class="module-val">swelling on left forelimb</div><div class="module-conf">79% confidence</div></div>
+            <div class="module-row"><div class="module-label">Breed risk check</div><div class="module-val">hip_dysplasia, elbow_dysplasia</div><div class="module-conf">100% confidence</div></div>
+            <div class="module-row"><div class="module-label">Urgency assessment</div><div class="module-val">EMERGENCY</div><div class="module-conf">82% combined confidence</div></div>
+          </div>
+          <div class="disclaimer" style="margin-top:6px;">This result is generated by an Artificial Intelligence model and does not constitute a medical diagnosis. Always consult a qualified veterinarian.</div>
+        </div>
+      </div>
+
+      <!-- ══════════════ RESULT — URGENT ══════════════ -->
+      <div class="phone-screen screen" id="s-result-urgent">
+        <div class="status-bar" style="background:#fff;color:#111;border-bottom:1px solid var(--border);"><span>9:41</span><span>▲▲ 🔋</span></div>
+        <div class="nav-header"><div class="nav-back" onclick="gs('s-home')">←</div><div class="nav-title">Triage result</div></div>
+        <div class="scroll-area">
+          <div class="urgency-banner u-urgent"><div class="urgency-icon">🕐</div><div class="urgency-tier">URGENT</div><div class="urgency-msg">See a vet within 24 hours</div></div>
+          <div class="conf-label">Artificial Intelligence (AI) confidence</div>
+          <div class="conf-track"><div class="conf-fill" style="width:71%;background:#F59E0B;"></div></div>
+          <div class="conf-pct">71%</div>
+          <div class="card"><div class="card-title">What our AI found</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Bruno appears to be experiencing significant discomfort in his left paw. While not an emergency, the persistent limping and sensitivity suggest an injury or infection that should be evaluated by a vet within 24 hours.</div></div>
+          <button class="btn-primary" onclick="gs('s-vetbooking')" style="margin-bottom:8px;">Book a vet now</button>
+          <div class="expand-btn" onclick="toggleMod('mod-urg')">▼ How was this result generated?</div>
+          <div id="mod-urg" style="display:none;" class="card">
+            <div class="module-row"><div class="module-label">Symptom analysis</div><div class="module-val">musculoskeletal — mild-moderate</div><div class="module-conf">72% confidence</div></div>
+            <div class="module-row"><div class="module-label">Image analysis</div><div class="module-val">minor abrasion visible</div><div class="module-conf">68% confidence</div></div>
+            <div class="module-row"><div class="module-label">Breed risk check</div><div class="module-val">hip_dysplasia (Labrador)</div><div class="module-conf">100% confidence</div></div>
+            <div class="module-row"><div class="module-label">Urgency assessment</div><div class="module-val">URGENT</div><div class="module-conf">71% combined confidence</div></div>
+          </div>
+          <div class="disclaimer" style="margin-top:6px;">This result is generated by an Artificial Intelligence model and does not constitute a medical diagnosis.</div>
+        </div>
+      </div>
+
+      <!-- ══════════════ RESULT — MONITOR ══════════════ -->
+      <div class="phone-screen screen" id="s-result-monitor">
+        <div class="status-bar" style="background:#fff;color:#111;border-bottom:1px solid var(--border);"><span>9:41</span><span>▲▲ 🔋</span></div>
+        <div class="nav-header"><div class="nav-back" onclick="gs('s-home')">←</div><div class="nav-title">Triage result</div></div>
+        <div class="scroll-area">
+          <div class="urgency-banner u-monitor"><div class="urgency-icon">👁</div><div class="urgency-tier">MONITOR</div><div class="urgency-msg">Watch closely — see a vet if symptoms worsen</div></div>
+          <div class="conf-label">Artificial Intelligence (AI) confidence</div>
+          <div class="conf-track"><div class="conf-fill" style="width:68%;background:#2563EB;"></div></div>
+          <div class="conf-pct">68%</div>
+          <div class="card"><div class="card-title">What our AI found</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Bruno shows mild paw sensitivity, but is still bearing some weight and eating normally. This is likely a minor strain. Monitor closely for the next 24 hours — if limping worsens or he stops eating, visit a vet.</div></div>
+          <button class="btn-primary" onclick="gs('s-vetbooking')" style="margin-bottom:8px;">Book a vet now</button>
+          <button class="btn-outline" onclick="gs('s-home')" style="margin-bottom:8px;">Monitor at home with guidance</button>
+          <div class="expand-btn" onclick="toggleMod('mod-mon')">▼ How was this result generated?</div>
+          <div id="mod-mon" style="display:none;" class="card">
+            <div class="module-row"><div class="module-label">Symptom analysis</div><div class="module-val">musculoskeletal — minor</div><div class="module-conf">65% confidence</div></div>
+            <div class="module-row"><div class="module-label">Image analysis</div><div class="module-val">no visible injury</div><div class="module-conf">70% confidence</div></div>
+            <div class="module-row"><div class="module-label">Breed risk check</div><div class="module-val">No breed-specific risks flagged</div></div>
+            <div class="module-row"><div class="module-label">Urgency assessment</div><div class="module-val">MONITOR</div><div class="module-conf">68% combined confidence</div></div>
+          </div>
+          <div class="disclaimer" style="margin-top:6px;">This result is generated by an Artificial Intelligence model and does not constitute a medical diagnosis.</div>
+        </div>
+      </div>
+
+      <!-- ══════════════ RESULT — SAFE ══════════════ -->
+      <div class="phone-screen screen" id="s-result-safe">
+        <div class="status-bar" style="background:#fff;color:#111;border-bottom:1px solid var(--border);"><span>9:41</span><span>▲▲ 🔋</span></div>
+        <div class="nav-header"><div class="nav-back" onclick="gs('s-home')">←</div><div class="nav-title">Triage result</div></div>
+        <div class="scroll-area">
+          <div class="urgency-banner u-safe"><div class="urgency-icon">✓</div><div class="urgency-tier">SAFE</div><div class="urgency-msg">Likely minor — home care advice provided</div></div>
+          <div class="conf-label">Artificial Intelligence (AI) confidence</div>
+          <div class="conf-track"><div class="conf-fill" style="width:76%;background:#16A34A;"></div></div>
+          <div class="conf-pct">76%</div>
+          <div class="card"><div class="card-title">What our AI found</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Bruno appears to have mild paw sensitivity, likely from a minor cut or thorn. He is still bearing weight partially and shows no systemic distress. Clean and inspect the paw; monitor for 24 hours.</div></div>
+          <button class="btn-primary" onclick="gs('s-vetbooking')" style="margin-bottom:8px;">Book a vet now</button>
+          <button class="btn-outline" onclick="gs('s-home')" style="margin-bottom:8px;">Monitor at home with guidance</button>
+          <div class="expand-btn" onclick="toggleMod('mod-sf')">▼ How was this result generated?</div>
+          <div id="mod-sf" style="display:none;" class="card">
+            <div class="module-row"><div class="module-label">Symptom analysis</div><div class="module-val">minor trauma</div><div class="module-conf">74% confidence</div></div>
+            <div class="module-row"><div class="module-label">Image analysis</div><div class="module-val">small abrasion on paw pad</div><div class="module-conf">81% confidence</div></div>
+            <div class="module-row"><div class="module-label">Breed risk check</div><div class="module-val">No breed-specific risks flagged</div></div>
+            <div class="module-row"><div class="module-label">Urgency assessment</div><div class="module-val">SAFE</div><div class="module-conf">76% combined confidence</div></div>
+          </div>
+          <div class="disclaimer" style="margin-top:6px;">This result is generated by an Artificial Intelligence model and does not constitute a medical diagnosis.</div>
+        </div>
+      </div>
+
+      <!-- ══════════════ FALLBACK ══════════════ -->
+      <div class="phone-screen screen" id="s-fallback" style="background:var(--bg);">
+        <div class="status-bar" style="background:var(--bg);color:#111;"><span>9:41</span><span>▲▲ 🔋</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;">
+          <div style="font-size:50px;margin-bottom:14px;">🤔</div>
+          <div style="font-size:21px;font-weight:700;color:var(--text);margin-bottom:10px;text-align:center;">Unable to determine</div>
+          <div style="font-size:13px;color:var(--muted);text-align:center;line-height:1.7;margin-bottom:26px;">Our Artificial Intelligence (AI) could not assess this with sufficient confidence. Please provide a clearer photo or connect with a qualified veterinarian.</div>
+          <div style="width:100%;display:flex;flex-direction:column;gap:8px;">
+            <button class="btn-primary" onclick="gs('s-vetbooking')">Talk to a vet</button>
+            <button class="btn-outline" onclick="gs('s-symptom')">Retry with better details</button>
+            <a class="link" onclick="gs('s-home')">Back to home</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ VET BOOKING ══════════════ -->
+      <div class="phone-screen screen" id="s-vetbooking">
+        <div class="status-bar" style="background:#fff;color:#111;border-bottom:1px solid var(--border);"><span>9:41</span><span>▲▲ 🔋</span></div>
+        <div class="nav-header"><div class="nav-back" onclick="gs('s-home')">←</div><div class="nav-title">Book a vet</div></div>
+        <div class="scroll-area">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Select a veterinarian and confirm your booking</div>
+          <div class="vet-card selected" id="vc1" onclick="pickVet(this,'Dr. Priya Mehta')">
+            <div class="vet-avatar">PM</div>
+            <div style="flex:1;"><div class="vet-name">Dr. Priya Mehta</div><div class="vet-spec">Dogs &amp; Cats specialist</div><div class="vet-meta"><span>⭐ 4.9</span><span>🕐 2:30 PM Today</span></div></div>
+            <div class="vet-check">✓</div>
+          </div>
+          <div class="vet-card" id="vc2" onclick="pickVet(this,'Dr. Rohan Sharma')">
+            <div class="vet-avatar" style="background:#7c3aed;">RS</div>
+            <div style="flex:1;"><div class="vet-name">Dr. Rohan Sharma</div><div class="vet-spec">All species</div><div class="vet-meta"><span>⭐ 4.7</span><span>🕐 4:00 PM Today</span></div></div>
+          </div>
+          <div class="vet-card" id="vc3" onclick="pickVet(this,'Dr. Ananya Iyer')">
+            <div class="vet-avatar" style="background:#059669;">AI</div>
+            <div style="flex:1;"><div class="vet-name">Dr. Ananya Iyer</div><div class="vet-spec">Birds &amp; Exotic</div><div class="vet-meta"><span>⭐ 4.8</span><span>🕐 9:00 AM Tomorrow</span></div></div>
+          </div>
+          <button class="btn-primary" id="confirm-btn" onclick="gs('s-vetcall')" style="margin-top:6px;">Confirm booking with Dr. Priya Mehta</button>
+        </div>
+      </div>
+
+      <!-- ══════════════ VET CALL (WebRTC) ══════════════ -->
+      <div class="phone-screen screen" id="s-vetcall" style="background:#111827;">
+        <div class="status-bar" style="background:#111827;color:#fff;"><span>9:41</span><span>▲▲ 🔋</span></div>
+        <div class="call-remote">
+          <div class="call-avatar">👩‍⚕️</div>
+          <div class="call-name">Dr. Priya Mehta</div>
+          <div class="call-status" id="call-status-text">Connecting via WebRTC (Web Real-Time Communication)…</div>
+          <div class="call-local">🐕</div>
+        </div>
+        <div class="call-controls">
+          <div class="call-timer" id="call-timer-display">00:00</div>
+          <div class="call-btns">
+            <!-- Mute toggle -->
+            <button class="call-btn" id="btn-mute" onclick="toggleMute()" title="Mute/Unmute">🎙</button>
+            <!-- End call → rating screen -->
+            <button class="call-btn call-end" onclick="gs('s-rating')" title="End call">📵</button>
+            <!-- Camera toggle — FIX: now shows 🚫 when off -->
+            <button class="call-btn" id="btn-cam" onclick="toggleCam()" title="Camera on/off">📷</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ POST-CALL RATING ══════════════ -->
+      <div class="phone-screen screen" id="s-rating" style="background:var(--bg);">
+        <div class="status-bar" style="background:var(--bg);color:#111;"><span>9:41</span><span>▲▲ 🔋</span></div>
+        <div class="rating-screen">
+          <div style="font-size:48px;margin-bottom:16px;">👩‍⚕️</div>
+          <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px;">How was your consultation?</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:24px;">Rate your session with Dr. Priya Mehta</div>
+          <div style="display:flex;gap:6px;margin-bottom:28px;">
+            <span class="star" onclick="rateStar(1)" id="s1">★</span>
+            <span class="star" onclick="rateStar(2)" id="s2">★</span>
+            <span class="star" onclick="rateStar(3)" id="s3">★</span>
+            <span class="star" onclick="rateStar(4)" id="s4">★</span>
+            <span class="star" onclick="rateStar(5)" id="s5">★</span>
+          </div>
+          <textarea class="input" rows="3" placeholder="Optional: add a note about this consultation…" style="resize:none;font-family:inherit;"></textarea>
+          <button class="btn-primary" onclick="gs('s-home')" style="margin-top:4px;">Submit rating</button>
+          <a class="link" onclick="gs('s-home')">Skip</a>
+        </div>
+      </div>
+
+      <!-- ══════════════ HEALTH HISTORY ══════════════ -->
+      <div class="phone-screen screen" id="s-history">
+        <div class="status-bar" style="background:#fff;color:#111;border-bottom:1px solid var(--border);"><span>9:41</span><span>▲▲ 🔋</span></div>
+        <div class="nav-header"><div class="nav-back" onclick="gs('s-home')">←</div><div class="nav-title">Health history</div></div>
+        <div class="scroll-area">
+          <div class="history-item" onclick="gs('s-result-emergency')">
+            <div class="history-badge" style="background:var(--emergency);"><div class="history-badge-icon">⚠</div><div class="history-badge-text">EMERGENCY</div></div>
+            <div class="history-info"><div class="history-pet">Bruno</div><div class="history-date">24 Apr 2026 · 9:15 AM</div></div>
+            <div class="history-right"><div class="history-conf">82%</div><div class="history-conf-label">confidence</div></div>
+            <div class="history-chevron">›</div>
+          </div>
+          <div class="history-item" onclick="gs('s-result-safe')">
+            <div class="history-badge" style="background:var(--safe);"><div class="history-badge-icon">✓</div><div class="history-badge-text">SAFE</div></div>
+            <div class="history-info"><div class="history-pet">Bruno</div><div class="history-date">18 Apr 2026 · 3:42 PM</div></div>
+            <div class="history-right"><div class="history-conf">76%</div><div class="history-conf-label">confidence</div></div>
+            <div class="history-chevron">›</div>
+          </div>
+          <div class="history-item" onclick="gs('s-result-urgent')">
+            <div class="history-badge" style="background:var(--urgent);"><div class="history-badge-icon">🕐</div><div class="history-badge-text">URGENT</div></div>
+            <div class="history-info"><div class="history-pet">Bruno</div><div class="history-date">10 Apr 2026 · 11:05 AM</div><div style="font-size:10px;color:var(--urgent);margin-top:2px;font-style:italic;">Vet consultation completed ⭐⭐⭐⭐⭐</div></div>
+            <div class="history-right"><div class="history-conf">71%</div><div class="history-conf-label">confidence</div></div>
+            <div class="history-chevron">›</div>
+          </div>
+          <div class="history-item" onclick="gs('s-result-monitor')">
+            <div class="history-badge" style="background:var(--monitor);"><div class="history-badge-icon">👁</div><div class="history-badge-text">MONITOR</div></div>
+            <div class="history-info"><div class="history-pet">Bruno</div><div class="history-date">05 Apr 2026 · 2:30 PM</div></div>
+            <div class="history-right"><div class="history-conf">68%</div><div class="history-conf-label">confidence</div></div>
+            <div class="history-chevron">›</div>
+          </div>
+          <div class="history-item">
+            <div class="history-badge" style="background:#6B7280;"><div class="history-badge-icon">?</div><div class="history-badge-text">FALLBACK</div></div>
+            <div class="history-info"><div class="history-pet">Bruno</div><div class="history-date">02 Apr 2026 · 6:20 PM</div><div style="font-size:10px;color:var(--muted);margin-top:2px;font-style:italic;">Low confidence — vet recommended</div></div>
+            <div class="history-right"><div class="history-conf">42%</div><div class="history-conf-label">confidence</div></div>
+            <div class="history-chevron">›</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /phone -->
+
+    <!-- ─── Info panel ─── -->
+    <div>
+      <div class="info-panel" style="margin-bottom:16px;">
+        <h3>🗺 Navigation flow</h3>
+        <ul>
+          <li><span>Onboarding</span>→ Register / Login</li>
+          <li><span>Login</span>→ Home Dashboard</li>
+          <li><span>Home · Log out</span>→ Onboarding ✅ fixed</li>
+          <li><span>Home</span>→ Symptom Input → Processing</li>
+          <li><span>Processing</span>→ 4 result variants + Fallback</li>
+          <li><span>Any result</span>→ Vet Booking → Vet Call</li>
+          <li><span>End call</span>→ Post-call Rating → Home</li>
+          <li><span>Home</span>→ Health History → any result</li>
+        </ul>
+      </div>
+
+      <div class="info-panel" style="margin-bottom:16px;">
+        <h3>🎨 Urgency tiers (FRS §5.1.3)</h3>
+        <ul>
+          <li><span style="color:#DC2626;">⬤</span> EMERGENCY #DC2626 — Seek care immediately</li>
+          <li><span style="color:#D97706;">⬤</span> URGENT #D97706 — See vet within 24 hrs</li>
+          <li><span style="color:#2563EB;">⬤</span> MONITOR #2563EB — Watch, vet if worse</li>
+          <li><span style="color:#16A34A;">⬤</span> SAFE #16A34A — Likely minor</li>
+          <li><span style="color:#6B7280;">⬤</span> UNDETERMINED — Fallback triggered</li>
+        </ul>
+      </div>
+
+      <div class="info-panel" style="margin-bottom:16px;">
+        <h3>🐛 Bugs fixed (v2)</h3>
+        <ul>
+          <li><span>HomeScreen</span>Logout now resets nav → Onboarding</li>
+          <li><span>VetCallScreen</span>Camera off icon: 📷 → 🚫</li>
+          <li><span>LoginScreen</span>Forgot password route registered</li>
+        </ul>
+      </div>
+
+      <div class="info-panel">
+        <h3>📱 All 17 screens</h3>
+        <ul>
+          <li><span>MOB-01</span> Onboarding (3 steps)</li>
+          <li><span>MOB-02</span> Register</li>
+          <li><span>MOB-03</span> Login</li>
+          <li><span>FR-05</span> Forgot Password</li>
+          <li><span>MOB-04</span> Home Dashboard</li>
+          <li><span>MOB-05</span> Pet Profile</li>
+          <li><span>MOB-06</span> Symptom Input</li>
+          <li><span>MOB-07</span> Processing (AI)</li>
+          <li><span>MOB-08</span> Result × 4 variants</li>
+          <li><span>MOB-09</span> Fallback</li>
+          <li><span>MOB-10</span> Vet Booking</li>
+          <li><span>MOB-11</span> Vet Call + Rating</li>
+          <li><span>MOB-12</span> Health History</li>
+        </ul>
+      </div>
+    </div>
+
+  </div><!-- /phone-wrap -->
+</main>
+
+<style>
+  @keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+</style>
+
+<script>
+  // ── Navigation ──────────────────────────────────────────────
+  function go(id, sidebarEl) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+    if (sidebarEl) sidebarEl.classList.add('active');
+    document.querySelector('.phone').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+  function gs(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+      item.classList.remove('active');
+      if ((item.getAttribute('onclick')||'').includes(`'${id}'`)) item.classList.add('active');
+    });
+  }
+
+  // ── Onboarding steps ────────────────────────────────────────
+  function obStep(n) {
+    [0,1,2].forEach(i => {
+      const el = document.getElementById('ob'+i);
+      el.style.display = i===n ? 'flex' : 'none';
+      if (i===n) el.style.flexDirection = 'column';
+    });
+  }
+
+  // ── Forgot password success state ───────────────────────────
+  function forgotSent() {
+    document.getElementById('forgot-body').innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 0;">
+        <div style="font-size:50px;margin-bottom:16px;">✅</div>
+        <div style="font-size:19px;font-weight:700;color:var(--text);margin-bottom:10px;">Check your email</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:26px;">
+          If that email is registered, a reset link has been sent. The link expires after 30 minutes.
+        </div>
+        <button class="btn-primary" onclick="gs('s-login')" style="width:100%">Back to log in</button>
+      </div>`;
+  }
+
+  // ── Vet selection ────────────────────────────────────────────
+  function pickVet(card, name) {
+    ['vc1','vc2','vc3'].forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('selected');
+      const chk = el.querySelector('.vet-check');
+      if (chk) chk.remove();
+    });
+    card.classList.add('selected');
+    const chk = document.createElement('div');
+    chk.className = 'vet-check'; chk.textContent = '✓';
+    card.appendChild(chk);
+    document.getElementById('confirm-btn').textContent = `Confirm booking with ${name}`;
+  }
+
+  // ── Module detail expand ─────────────────────────────────────
+  function toggleMod(id) {
+    const d = document.getElementById(id);
+    const btn = d.previousElementSibling;
+    if (d.style.display === 'none') { d.style.display='block'; btn.textContent='▲ Hide details'; }
+    else { d.style.display='none'; btn.textContent='▼ How was this result generated?'; }
+  }
+
+  // ── Vet call interactive controls ────────────────────────────
+  let muted = false, camOff = false, callTick = null;
+
+  document.getElementById('s-vetcall').addEventListener('click', function handler() {
+    // start timer on first interaction with call screen
+    if (!callTick) {
+      let secs = 0;
+      callTick = setInterval(() => {
+        secs++;
+        const m = String(Math.floor(secs/60)).padStart(2,'0');
+        const s = String(secs%60).padStart(2,'0');
+        document.getElementById('call-timer-display').textContent = `${m}:${s}`;
+        if (secs === 3) document.getElementById('call-status-text').textContent = 'Connected · Dr. Priya Mehta';
+      }, 1000);
+    }
+    document.getElementById('s-vetcall').removeEventListener('click', handler);
+  });
+
+  function toggleMute() {
+    muted = !muted;
+    const btn = document.getElementById('btn-mute');
+    btn.textContent = muted ? '🔇' : '🎙';
+    btn.classList.toggle('active', muted);
+  }
+
+  // FIX: camera off now shows 🚫 (matches VetCallScreen.js fix)
+  function toggleCam() {
+    camOff = !camOff;
+    const btn = document.getElementById('btn-cam');
+    btn.textContent = camOff ? '🚫' : '📷';
+    btn.classList.toggle('active', camOff);
+  }
+
+  // ── Star rating ──────────────────────────────────────────────
+  function rateStar(n) {
+    for (let i=1;i<=5;i++) {
+      document.getElementById('s'+i).classList.toggle('on', i<=n);
+    }
+  }
+</script>
+</body>
+</html>

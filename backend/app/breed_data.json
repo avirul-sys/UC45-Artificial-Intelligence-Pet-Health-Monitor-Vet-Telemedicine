@@ -1,0 +1,74 @@
+{
+  "labrador retriever": {
+    "risk_flags": ["hip_dysplasia", "elbow_dysplasia", "obesity", "exercise_induced_collapse"],
+    "breed_note": "Labrador Retrievers are prone to hip and elbow dysplasia. They have a strong tendency toward obesity, which worsens joint problems. Exercise-induced collapse can occur in young, active dogs."
+  },
+  "golden retriever": {
+    "risk_flags": ["hip_dysplasia", "cancer", "heart_disease", "skin_allergies"],
+    "breed_note": "Golden Retrievers have elevated cancer rates compared to other breeds. Hip dysplasia and skin/coat allergies are common. Regular cardiac screening is recommended."
+  },
+  "german shepherd": {
+    "risk_flags": ["hip_dysplasia", "degenerative_myelopathy", "bloat", "exocrine_pancreatic_insufficiency"],
+    "breed_note": "German Shepherds are highly susceptible to hip dysplasia and degenerative myelopathy (progressive spinal cord disease). Bloat (GDV) is a life-threatening risk, especially after meals."
+  },
+  "bulldog": {
+    "risk_flags": ["brachycephalic_syndrome", "hip_dysplasia", "skin_fold_dermatitis", "cherry_eye"],
+    "breed_note": "Bulldogs have Brachycephalic Obstructive Airway Syndrome (BOAS) due to their flat faces, causing breathing difficulties. Skin fold dermatitis requires regular cleaning. Overheating is a serious risk."
+  },
+  "french bulldog": {
+    "risk_flags": ["brachycephalic_syndrome", "intervertebral_disc_disease", "allergies", "patellar_luxation"],
+    "breed_note": "French Bulldogs are prone to breathing difficulties, spinal issues (IVDD), and skin allergies. They must not be left in hot environments and cannot swim due to their body shape."
+  },
+  "poodle": {
+    "risk_flags": ["addisons_disease", "bloat", "hip_dysplasia", "progressive_retinal_atrophy"],
+    "breed_note": "Poodles are predisposed to Addison's disease (adrenal gland disorder) and bloat. Progressive retinal atrophy can lead to blindness. Generally long-lived with proper care."
+  },
+  "beagle": {
+    "risk_flags": ["obesity", "epilepsy", "hypothyroidism", "cherry_eye"],
+    "breed_note": "Beagles are highly prone to obesity and are food-motivated, requiring portion control. Epilepsy affects a significant portion of the breed. Hypothyroidism is also common."
+  },
+  "rottweiler": {
+    "risk_flags": ["hip_dysplasia", "osteosarcoma", "heart_disease", "bloat"],
+    "breed_note": "Rottweilers have elevated risk for bone cancer (osteosarcoma) and aortic stenosis (heart defect). Hip dysplasia is very common. Bloat is a serious risk."
+  },
+  "yorkshire terrier": {
+    "risk_flags": ["patellar_luxation", "portosystemic_shunt", "tracheal_collapse", "hypoglycemia"],
+    "breed_note": "Yorkshire Terriers are prone to patellar luxation (kneecap dislocation) and liver shunts. Tracheal collapse can cause chronic coughing. Small breeds like Yorkies can experience dangerous blood sugar drops."
+  },
+  "boxer": {
+    "risk_flags": ["cancer", "heart_disease", "brachycephalic_syndrome", "hip_dysplasia"],
+    "breed_note": "Boxers have one of the highest cancer rates among dog breeds. Arrhythmogenic Right Ventricular Cardiomyopathy (ARVC) is breed-specific. Breathing issues from their brachycephalic structure."
+  },
+  "dachshund": {
+    "risk_flags": ["intervertebral_disc_disease", "obesity", "epilepsy", "patellar_luxation"],
+    "breed_note": "Dachshunds' long spine makes them highly susceptible to intervertebral disc disease (IVDD), which can cause paralysis. Obesity dramatically increases this risk. Avoid stairs and jumping."
+  },
+  "siberian husky": {
+    "risk_flags": ["progressive_retinal_atrophy", "hip_dysplasia", "autoimmune_disorders", "zinc_deficiency"],
+    "breed_note": "Siberian Huskies are prone to progressive retinal atrophy leading to blindness. They can develop zinc-responsive dermatosis. Generally hardy but sensitive to heat."
+  },
+  "persian cat": {
+    "risk_flags": ["polycystic_kidney_disease", "brachycephalic_syndrome", "skin_fold_dermatitis", "dental_disease"],
+    "breed_note": "Persian cats have high rates of polycystic kidney disease (PKD). Their flat face causes breathing difficulties and dental crowding. Facial folds require daily cleaning."
+  },
+  "maine coon": {
+    "risk_flags": ["hypertrophic_cardiomyopathy", "hip_dysplasia", "spinal_muscular_atrophy"],
+    "breed_note": "Maine Coons are predisposed to hypertrophic cardiomyopathy (HCM), the most common heart disease in cats. Spinal muscular atrophy can cause muscle weakness."
+  },
+  "siamese cat": {
+    "risk_flags": ["respiratory_issues", "dental_disease", "progressive_retinal_atrophy", "amyloidosis"],
+    "breed_note": "Siamese cats are prone to respiratory infections. They have higher rates of liver amyloidosis and dental issues due to their narrow jaw. Crossed eyes and kinked tails are breed traits."
+  },
+  "british shorthair": {
+    "risk_flags": ["hypertrophic_cardiomyopathy", "polycystic_kidney_disease", "obesity"],
+    "breed_note": "British Shorthairs have significant risk of hypertrophic cardiomyopathy and PKD. Their calm nature and love of food make obesity a real concern requiring portion management."
+  },
+  "mixed breed": {
+    "risk_flags": [],
+    "breed_note": null
+  },
+  "unknown": {
+    "risk_flags": [],
+    "breed_note": null
+  }
+}

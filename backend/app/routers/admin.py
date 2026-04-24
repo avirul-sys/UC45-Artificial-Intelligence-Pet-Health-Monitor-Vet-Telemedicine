@@ -1,0 +1,213 @@
+import csv
+import io
+from datetime import datetime, date
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func, and_
+
+from app.database import get_db
+from app.models import AuditLog, Config, TriageEvent, VetSession, User
+from app.deps import get_admin_user
+
+router = APIRouter()
+
+ALLOWED_CONFIG_KEYS = {
+    "confidence_threshold",
+    "rate_limit_per_hour",
+    "gpt4o_timeout_seconds",
+    "circuit_breaker_reset_seconds",
+    "prompt_version_id",
+}
+
+
+class ConfigUpdate(BaseModel):
+    key: str
+    value: str
+
+
+# ─── Metrics ────────────────────────────────────────────────────────────────
+
+@router.get("/metrics")
+async def get_metrics(
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(get_admin_user),
+):
+    today = datetime.utcnow().date()
+    today_start = datetime.combine(today, datetime.min.time())
+
+    triage_today = await db.scalar(
+        select(func.count(TriageEvent.id)).where(TriageEvent.created_at >= today_start)
+    )
+    avg_conf = await db.scalar(
+        select(func.avg(TriageEvent.confidence_score)).where(TriageEvent.created_at >= today_start)
+    )
+    fallback_count = await db.scalar(
+        select(func.count(TriageEvent.id)).where(
+            TriageEvent.created_at >= today_start,
+            TriageEvent.fallback_triggered == True,
+        )
+    )
+    active_sessions = await db.scalar(
+        select(func.count(VetSession.id)).where(VetSession.status == "initiated")
+    )
+
+    fallback_rate = (fallback_count / triage_today) if triage_today else 0.0
+
+    return {
+        "triage_requests_today": triage_today or 0,
+        "avg_confidence": round(avg_conf or 0.0, 4),
+        "fallback_rate": round(fallback_rate, 4),
+        "active_sessions": active_sessions or 0,
+    }
+
+
+# ─── Config ──────────────────────────────────────────────────────────────────
+
+@router.put("/config")
+async def update_config(
+    body: ConfigUpdate,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_admin_user),
+):
+    if body.key not in ALLOWED_CONFIG_KEYS:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Unknown config key: {body.key}")
+
+    result = await db.execute(select(Config).where(Config.key == body.key))
+    row = result.scalar_one_or_none()
+    if row:
+        row.value = body.value
+        row.updated_at = datetime.utcnow()
+        row.updated_by = admin.id
+    else:
+        db.add(Config(key=body.key, value=body.value, updated_by=admin.id))
+
+    await db.commit()
+    return {"message": f"Config '{body.key}' updated to '{body.value}'"}
+
+
+@router.get("/config")
+async def get_config_values(
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(get_admin_user),
+):
+    result = await db.execute(select(Config))
+    rows = result.scalars().all()
+    return {r.key: r.value for r in rows}
+
+
+# ─── Audit Log ───────────────────────────────────────────────────────────────
+
+def _build_audit_query(
+    from_date: Optional[date],
+    to_date: Optional[date],
+    urgency_tiers: Optional[list[str]],
+    fallback: Optional[bool],
+    min_confidence: float,
+    max_confidence: float,
+):
+    filters = []
+    if from_date:
+        filters.append(AuditLog.timestamp >= datetime.combine(from_date, datetime.min.time()))
+    if to_date:
+        filters.append(AuditLog.timestamp <= datetime.combine(to_date, datetime.max.time()))
+    if urgency_tiers:
+        filters.append(AuditLog.urgency_tier.in_(urgency_tiers))
+    if fallback is not None:
+        filters.append(AuditLog.fallback_triggered == fallback)
+    filters.append(AuditLog.confidence_score >= min_confidence)
+    filters.append(AuditLog.confidence_score <= max_confidence)
+    return and_(*filters) if filters else True
+
+
+@router.get("/audit-log")
+async def get_audit_log(
+    from_date: Optional[date] = Query(None),
+    to_date: Optional[date] = Query(None),
+    urgency_tier: Optional[list[str]] = Query(None),
+    fallback: Optional[bool] = Query(None),
+    min_confidence: float = Query(0.0, ge=0.0, le=1.0),
+    max_confidence: float = Query(1.0, ge=0.0, le=1.0),
+    page: int = Query(1, ge=1),
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(get_admin_user),
+):
+    page_size = 20
+    filters = _build_audit_query(from_date, to_date, urgency_tier, fallback, min_confidence, max_confidence)
+
+    total = await db.scalar(select(func.count(AuditLog.id)).where(filters))
+    result = await db.execute(
+        select(AuditLog)
+        .where(filters)
+        .order_by(AuditLog.timestamp.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
+    rows = result.scalars().all()
+
+    return {
+        "total": total,
+        "page": page,
+        "items": [
+            {
+                "triage_id": r.triage_id,
+                "event_type": r.event_type,
+                "input_hash": r.input_hash,
+                "output_hash": r.output_hash,
+                "model_version": r.model_version,
+                "prompt_version_id": r.prompt_version_id,
+                "confidence_score": r.confidence_score,
+                "urgency_tier": r.urgency_tier,
+                "fallback_triggered": r.fallback_triggered,
+                "timestamp": r.timestamp.isoformat(),
+            }
+            for r in rows
+        ],
+    }
+
+
+@router.get("/audit-log/export")
+async def export_audit_log(
+    from_date: Optional[date] = Query(None),
+    to_date: Optional[date] = Query(None),
+    urgency_tier: Optional[list[str]] = Query(None),
+    fallback: Optional[bool] = Query(None),
+    min_confidence: float = Query(0.0, ge=0.0, le=1.0),
+    max_confidence: float = Query(1.0, ge=0.0, le=1.0),
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(get_admin_user),
+):
+    filters = _build_audit_query(from_date, to_date, urgency_tier, fallback, min_confidence, max_confidence)
+    result = await db.execute(
+        select(AuditLog).where(filters).order_by(AuditLog.timestamp.desc())
+    )
+    rows = result.scalars().all()
+
+    def generate():
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+        writer.writerow([
+            "triage_id", "event_type", "input_hash", "output_hash",
+            "model_version", "prompt_version_id", "confidence_score",
+            "urgency_tier", "fallback_triggered", "timestamp",
+        ])
+        yield buf.getvalue()
+        for r in rows:
+            buf = io.StringIO()
+            writer = csv.writer(buf)
+            writer.writerow([
+                r.triage_id, r.event_type, r.input_hash, r.output_hash,
+                r.model_version, r.prompt_version_id, r.confidence_score,
+                r.urgency_tier, r.fallback_triggered, r.timestamp.isoformat(),
+            ])
+            yield buf.getvalue()
+
+    filename = f"audit_log_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+    return StreamingResponse(
+        generate(),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )

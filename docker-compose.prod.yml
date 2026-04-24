@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  api:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - DATABASE_URL=postgresql+asyncpg://uc45user:uc45pass@db:5432/uc45
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: uc45
+      POSTGRES_USER: uc45user
+      POSTGRES_PASSWORD: uc45pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U uc45user -d uc45"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  admin:
+    build: ./admin
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+
+volumes:
+  postgres_data:
