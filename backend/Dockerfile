@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN useradd --no-log-init -r -u 1001 appuser
+RUN useradd --no-log-init --uid 1001 appuser
 USER appuser
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
