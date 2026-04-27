@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 
-const BASE = `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api/v1`;
+const BASE = process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}/api/v1` : '/api/v1';
 const PAGE_SIZE = 20;
 
 const URGENCY_COLORS = {

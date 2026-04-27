@@ -34,7 +34,7 @@ services:
     build: ./frontend
     network_mode: host
     environment:
-      - REACT_APP_API_URL=http://localhost:${PORT}
+      - PORT=${PORT}
 
 volumes:
   postgres_data:
