@@ -4,8 +4,9 @@ services:
   api:
     build: ./backend
     ports:
-      - "8000:8000"
+      - "${PORT:-8000}:${PORT:-8000}"
     environment:
+      - PORT=${PORT:-8000}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
       - DATABASE_URL=postgresql+asyncpg://uc45user:uc45pass@db:5432/uc45
@@ -13,7 +14,7 @@ services:
       db:
         condition: service_healthy
     command: >
-      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"
 
   db:
     image: postgres:15
@@ -31,12 +32,12 @@ services:
       timeout: 5s
       retries: 10
 
-  admin:
-    build: ./admin
+  frontend:
+    build: ./frontend
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_API_URL=http://localhost:${PORT:-8000}
 
 volumes:
   postgres_data:
