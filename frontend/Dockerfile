@@ -7,6 +7,7 @@ RUN npm install
 
 COPY . .
 
+ENV CI=false
 RUN npm run build && npm install -g serve
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
