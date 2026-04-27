@@ -1,22 +1,23 @@
 services:
   api:
     build: ./backend
+    network_mode: host
     ports:
       - "${PORT}:8000"
     environment:
+      - PORT=${PORT}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - SECRET_KEY=${SECRET_KEY}
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:5432/${POSTGRES_DB}
     depends_on:
       db:
         condition: service_healthy
-    networks:
-      - app
     command: >
-      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"
 
   db:
     image: postgres:15
+    network_mode: host
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -28,20 +29,12 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-    networks:
-      - app
 
   frontend:
     build: ./frontend
+    network_mode: host
     environment:
       - REACT_APP_API_URL=http://localhost:${PORT}
-    networks:
-      - app
-
-networks:
-  app:
-    external: true
-    name: team-bonkers-18-19hp-net
 
 volumes:
   postgres_data:
