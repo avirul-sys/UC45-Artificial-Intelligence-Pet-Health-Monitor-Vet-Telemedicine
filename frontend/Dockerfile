@@ -7,6 +7,12 @@ RUN npm install
 
 COPY . .
 
-RUN npm run build
+RUN npm run build && npm install -g serve
 
-CMD ["npm", "start"]
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
+
+CMD ["serve", "-s", "build", "-l", "3000"]
