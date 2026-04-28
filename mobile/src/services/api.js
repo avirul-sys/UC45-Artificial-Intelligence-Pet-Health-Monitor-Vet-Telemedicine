@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-const BASE_URL = 'http://10.0.2.2:8000/api/v1'; // Android emulator; use device IP for physical device
+const BASE_URL = const BASE_URL = 'http://10.199.225.140:8000/api/v1'; // Android emulator; use device IP for physical device
 
 export const api = axios.create({
   baseURL: BASE_URL,

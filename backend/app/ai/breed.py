@@ -5,6 +5,9 @@ import os
 from datetime import datetime, timedelta
 from typing import Optional
 
+from app.ai.openai_client import call_openai
+from app.ai.prompts import get_prompt
+
 logger = logging.getLogger(__name__)
 
 _BREED_CACHE: dict = {}
@@ -35,13 +38,46 @@ async def _ensure_cache():
         await _load_breed_db()
 
 
-async def run_breed_module(breed: str) -> dict:
+async def run_breed_module(
+    breed: str,
+    species: str = "",
+    prompt_version: str = "PROMPT_V1",
+    timeout: float = 4.0,
+) -> dict:
     await _ensure_cache()
 
     key = breed.strip().lower()
-    data = _BREED_CACHE.get(key) or _BREED_CACHE.get("unknown", {})
+    data = _BREED_CACHE.get(key)
 
+    if data:
+        return {
+            "risk_flags": data.get("risk_flags", []),
+            "breed_note": data.get("breed_note"),
+            "confidence": 1.0,
+        }
+
+    # Breed not in local DB — enrich via GPT-4o (Module 3)
+    system_prompt = get_prompt(prompt_version, "breed")
+    user_message = f"Breed: {breed}\nSpecies: {species or 'unknown'}"
+
+    result = await call_openai(
+        module="breed",
+        system_prompt=system_prompt,
+        user_message=user_message,
+        timeout=timeout,
+    )
+
+    if result:
+        return {
+            "risk_flags": result.get("risk_flags", []),
+            "breed_note": result.get("breed_note"),
+            "confidence": result.get("confidence", 0.5),
+        }
+
+    # Fallback to unknown entry if GPT-4o call fails
+    fallback = _BREED_CACHE.get("unknown", {})
     return {
-        "risk_flags": data.get("risk_flags", []),
-        "breed_note": data.get("breed_note"),
+        "risk_flags": fallback.get("risk_flags", []),
+        "breed_note": fallback.get("breed_note"),
+        "confidence": 0.0,
     }

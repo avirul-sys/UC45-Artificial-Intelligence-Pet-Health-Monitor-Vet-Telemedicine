@@ -77,6 +77,7 @@ class AuditLog(Base):
     urgency_tier: Mapped[str] = mapped_column(String(20))
     fallback_triggered: Mapped[bool] = mapped_column(Boolean)
     row_checksum: Mapped[str] = mapped_column(String(64))
+    prev_checksum: Mapped[str | None] = mapped_column(String(64), nullable=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     triage_event: Mapped["TriageEvent"] = relationship("TriageEvent", back_populates="audit_entry")
@@ -84,8 +85,8 @@ class AuditLog(Base):
     @staticmethod
     def compute_checksum(triage_id, input_hash, output_hash, model_version,
                          prompt_version_id, confidence_score, urgency_tier,
-                         fallback_triggered, timestamp) -> str:
-        raw = f"{triage_id}{input_hash}{output_hash}{model_version}{prompt_version_id}{confidence_score}{urgency_tier}{fallback_triggered}{timestamp}"
+                         fallback_triggered, timestamp, prev_checksum="") -> str:
+        raw = f"{triage_id}{input_hash}{output_hash}{model_version}{prompt_version_id}{confidence_score}{urgency_tier}{fallback_triggered}{timestamp}{prev_checksum}"
         return hashlib.sha256(raw.encode()).hexdigest()
 
 

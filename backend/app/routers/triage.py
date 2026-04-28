@@ -25,6 +25,7 @@ MAX_IMAGE_BYTES = 5 * 1024 * 1024  # 5 MB
 
 class TriageResponse(BaseModel):
     triage_id: str
+    pet_id: str
     urgency_tier: str
     confidence_score: float
     explanation: str
@@ -74,7 +75,7 @@ async def submit_triage(
     m1, m2, m3 = await asyncio.gather(
         run_symptom_module(description, prompt_version, timeout),
         run_image_module(description, image_bytes, prompt_version, timeout),
-        run_breed_module(pet.breed),
+        run_breed_module(pet.breed, pet.species, prompt_version, timeout),
     )
 
     # Module 4 — depends on m1/m2/m3
@@ -105,9 +106,17 @@ async def submit_triage(
         "fallback_triggered": fallback,
     }, sort_keys=True)
     output_hash = hashlib.sha256(output_payload.encode()).hexdigest()
+
+    # Chain: fetch previous row_checksum for tamper-evident hash chain
+    prev_result = await db.execute(
+        select(AuditLog.row_checksum).order_by(AuditLog.timestamp.desc()).limit(1)
+    )
+    prev_checksum = prev_result.scalar_one_or_none() or ""
+
     checksum = AuditLog.compute_checksum(
         event.id, input_hash, output_hash, "gpt-4o", prompt_version,
-        combined_confidence, event.urgency_tier, fallback, ts.isoformat()
+        combined_confidence, event.urgency_tier, fallback, ts.isoformat(),
+        prev_checksum,
     )
     audit = AuditLog(
         triage_id=event.id,
@@ -119,6 +128,7 @@ async def submit_triage(
         urgency_tier=event.urgency_tier,
         fallback_triggered=fallback,
         row_checksum=checksum,
+        prev_checksum=prev_checksum or None,
         timestamp=ts,
     )
     db.add(audit)
@@ -126,6 +136,7 @@ async def submit_triage(
 
     return TriageResponse(
         triage_id=event.id,
+        pet_id=pet.id,
         urgency_tier=event.urgency_tier,
         confidence_score=combined_confidence,
         explanation=event.explanation,
@@ -164,10 +175,14 @@ async def triage_history(
     for event, pet_name in rows:
         items.append({
             "triage_id": event.id,
+            "pet_id": event.pet_id,
             "pet_name": pet_name,
             "urgency_tier": event.urgency_tier,
             "confidence_score": event.confidence_score,
             "fallback_triggered": event.fallback_triggered,
+            "explanation": event.explanation,
+            "breed_risk_note": event.breed_risk_note,
+            "module_outputs": event.module_outputs,
             "created_at": event.created_at.isoformat(),
         })
     return {"items": items, "page": page}
@@ -190,6 +205,7 @@ async def get_triage(
 
     return TriageResponse(
         triage_id=event.id,
+        pet_id=event.pet_id,
         urgency_tier=event.urgency_tier,
         confidence_score=event.confidence_score,
         explanation=event.explanation,

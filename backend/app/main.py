@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 import logging
+import uuid
 
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
@@ -50,6 +51,14 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
 )
+
+
+@app.middleware("http")
+async def add_request_id(request: Request, call_next):
+    request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = request_id
+    return response
 
 
 @app.exception_handler(Exception)

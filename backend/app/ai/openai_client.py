@@ -88,6 +88,8 @@ async def _call_openai_raw(
         ],
         "response_format": {"type": "json_object"},
         "max_tokens": 300,
+        "temperature": 0,
+        "seed": 42,
     }
 
     async with httpx.AsyncClient(timeout=timeout) as client:

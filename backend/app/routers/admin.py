@@ -58,6 +58,18 @@ async def get_metrics(
 
     fallback_rate = (fallback_count / triage_today) if triage_today else 0.0
 
+    # Error rate — fallback proportion over last 30 days
+    total_30d = await db.scalar(
+        select(func.count(TriageEvent.id)).where(TriageEvent.created_at >= thirty_days_ago)
+    )
+    fallback_30d = await db.scalar(
+        select(func.count(TriageEvent.id)).where(
+            TriageEvent.created_at >= thirty_days_ago,
+            TriageEvent.fallback_triggered == True,
+        )
+    )
+    error_rate = (fallback_30d / total_30d) if total_30d else 0.0
+
     # Urgency distribution — counts per tier for today
     urg_result = await db.execute(
         select(TriageEvent.urgency_tier, func.count(TriageEvent.id))
@@ -104,6 +116,7 @@ async def get_metrics(
         "triage_requests_today": triage_today or 0,
         "avg_confidence": round(avg_conf or 0.0, 4),
         "fallback_rate": round(fallback_rate, 4),
+        "error_rate": round(error_rate, 4),
         "active_sessions": active_sessions or 0,
         "urgency_distribution": urgency_distribution,
         "confidence_buckets": confidence_buckets,
@@ -241,6 +254,8 @@ async def get_audit_log(
                 "confidence_score": r.confidence_score,
                 "urgency_tier": r.urgency_tier,
                 "fallback_triggered": r.fallback_triggered,
+                "row_checksum": r.row_checksum,
+                "prev_checksum": r.prev_checksum,
                 "timestamp": r.timestamp.isoformat(),
             }
             for r in rows
@@ -271,7 +286,7 @@ async def export_audit_log(
         writer.writerow([
             "triage_id", "event_type", "input_hash", "output_hash",
             "model_version", "prompt_version_id", "confidence_score",
-            "urgency_tier", "fallback_triggered", "timestamp",
+            "urgency_tier", "fallback_triggered", "row_checksum", "prev_checksum", "timestamp",
         ])
         yield buf.getvalue()
         for r in rows:
@@ -280,7 +295,8 @@ async def export_audit_log(
             writer.writerow([
                 r.triage_id, r.event_type, r.input_hash, r.output_hash,
                 r.model_version, r.prompt_version_id, r.confidence_score,
-                r.urgency_tier, r.fallback_triggered, r.timestamp.isoformat(),
+                r.urgency_tier, r.fallback_triggered,
+                r.row_checksum, r.prev_checksum, r.timestamp.isoformat(),
             ])
             yield buf.getvalue()
 
@@ -290,3 +306,38 @@ async def export_audit_log(
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
+
+
+# ─── Audit Chain Verification ────────────────────────────────────────────────
+
+@router.get("/audit/verify")
+async def verify_audit_chain(
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(get_admin_user),
+):
+    from app.models import AuditLog as _AuditLog
+    result = await db.execute(
+        select(_AuditLog).order_by(_AuditLog.timestamp.asc())
+    )
+    rows = result.scalars().all()
+
+    tampered = []
+    expected_prev = ""
+    for row in rows:
+        expected = _AuditLog.compute_checksum(
+            row.triage_id, row.input_hash, row.output_hash,
+            row.model_version, row.prompt_version_id,
+            row.confidence_score, row.urgency_tier,
+            row.fallback_triggered, row.timestamp.isoformat(),
+            row.prev_checksum or "",
+        )
+        if row.row_checksum != expected:
+            tampered.append({"triage_id": row.triage_id, "timestamp": row.timestamp.isoformat()})
+        expected_prev = row.row_checksum
+
+    return {
+        "total_checked": len(rows),
+        "tampered_count": len(tampered),
+        "tampered_entries": tampered,
+        "chain_valid": len(tampered) == 0,
+    }
