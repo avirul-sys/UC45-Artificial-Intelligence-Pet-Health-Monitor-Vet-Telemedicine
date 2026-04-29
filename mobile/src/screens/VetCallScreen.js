@@ -10,7 +10,7 @@ import { logEvent, Events } from '../utils/analytics';
 const ICE_SERVERS = [{ urls: 'stun:stun.l.google.com:19302' }];
 
 export default function VetCallScreen({ navigation, route }) {
-  const { callId, vetName } = route.params || {};
+  const { callId, vetName = 'your vet' } = route.params || {};
   const [localStream, setLocalStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
   const [muted, setMuted] = useState(false);

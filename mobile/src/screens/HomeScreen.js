@@ -52,7 +52,7 @@ export default function HomeScreen({ navigation }) {
       <NetworkBanner />
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.greeting}>Hello, {user?.name?.split(' ')[0] || 'there'} 👋</Text>
+          <Text style={styles.greeting}>Hello, {user?.name?.split(' ')?.[0] || 'there'} 👋</Text>
           <View style={styles.headerRight}>
             <TouchableOpacity onPress={showNotifications} style={styles.bellBtn} accessibilityLabel="Notifications">
               <Text style={styles.bellIcon}>🔔</Text>

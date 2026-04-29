@@ -53,7 +53,7 @@ export default function RegisterScreen({ navigation }) {
           </Text>
           <View style={styles.refCard}>
             <Text style={styles.refLabel}>Reference ID</Text>
-            <Text style={styles.refId}>{userId.slice(0, 8).toUpperCase()}</Text>
+            <Text style={styles.refId}>{String(userId || '').slice(0, 8).toUpperCase()}</Text>
           </View>
           <TouchableOpacity
             style={styles.btnPrimary}
