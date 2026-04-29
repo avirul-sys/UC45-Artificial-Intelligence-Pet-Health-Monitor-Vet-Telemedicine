@@ -52,7 +52,7 @@ async def run_breed_module(
     if data:
         return {
             "risk_flags": data.get("risk_flags", []),
-            "breed_note": data.get("breed_note"),
+            "breed_note": data.get("breed_note", ""),
             "confidence": 1.0,
         }
 

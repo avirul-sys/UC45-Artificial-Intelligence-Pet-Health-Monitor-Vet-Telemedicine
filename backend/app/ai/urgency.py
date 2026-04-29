@@ -11,7 +11,7 @@ def _compute_confidence(m1: dict, m2: dict, m3: dict) -> tuple[float, bool]:
     """
     s_conf = m1.get("confidence", 0.0) or 0.0
     i_conf = m2.get("confidence")            # None = no image
-    b_conf = 1.0 if m3.get("risk_flags") else None
+    b_conf = float(m3.get("confidence", 0.0)) if m3 else None
 
     errored = s_conf == 0.0 or (i_conf is not None and i_conf == 0.0)
 

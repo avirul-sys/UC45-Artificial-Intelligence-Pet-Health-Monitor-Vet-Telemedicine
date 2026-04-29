@@ -1,4 +1,4 @@
-"""Add prev_checksum to audit_log and enforce append-only rule
+"""Add prev_checksum to audit_log for tamper-evident hash chain
 
 Revision ID: 005
 Revises: 004
@@ -18,23 +18,11 @@ def upgrade() -> None:
         "audit_log",
         sa.Column("prev_checksum", sa.String(64), nullable=True),
     )
-
-    # Append-only rule: block UPDATE and DELETE on audit_log
-    op.execute(
-        """
-        CREATE RULE audit_log_no_update AS
-            ON UPDATE TO audit_log DO INSTEAD NOTHING
-        """
-    )
-    op.execute(
-        """
-        CREATE RULE audit_log_no_delete AS
-            ON DELETE TO audit_log DO INSTEAD NOTHING
-        """
-    )
+    op.create_index("ix_audit_log_triage_id", "audit_log", ["triage_id"])
+    op.create_index("ix_audit_log_timestamp", "audit_log", ["timestamp"])
 
 
 def downgrade() -> None:
-    op.execute("DROP RULE IF EXISTS audit_log_no_update ON audit_log")
-    op.execute("DROP RULE IF EXISTS audit_log_no_delete ON audit_log")
+    op.drop_index("ix_audit_log_timestamp", "audit_log")
+    op.drop_index("ix_audit_log_triage_id", "audit_log")
     op.drop_column("audit_log", "prev_checksum")

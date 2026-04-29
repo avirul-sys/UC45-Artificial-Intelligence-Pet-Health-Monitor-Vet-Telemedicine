@@ -7,7 +7,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from app.database import get_db
 from app.models import Pet, TriageEvent, AuditLog, User
@@ -185,7 +185,10 @@ async def triage_history(
             "module_outputs": event.module_outputs,
             "created_at": event.created_at.isoformat(),
         })
-    return {"items": items, "page": page}
+    total = await db.scalar(
+        select(func.count(TriageEvent.id)).where(TriageEvent.pet_id.in_(pet_ids))
+    )
+    return {"items": items, "page": page, "total": total or 0}
 
 
 @router.get("/triage/{triage_id}", response_model=TriageResponse)

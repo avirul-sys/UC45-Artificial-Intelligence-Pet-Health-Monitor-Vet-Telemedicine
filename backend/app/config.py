@@ -20,9 +20,20 @@ class Settings(BaseSettings):
     @field_validator("allowed_origins", mode="before")
     @classmethod
     def parse_origins(cls, v: object) -> list[str]:
+        if isinstance(v, list):
+            return v
         if isinstance(v, str):
+            v = v.strip()
+            if not v:
+                return ["http://localhost:3000", "http://localhost:19006"]
+            if v.startswith("["):
+                import json as _json
+                try:
+                    return _json.loads(v)
+                except Exception:
+                    pass
             return [o.strip() for o in v.split(",") if o.strip()]
-        return v  # type: ignore[return-value]
+        return ["http://localhost:3000", "http://localhost:19006"]
 
     class Config:
         env_file = ".env"

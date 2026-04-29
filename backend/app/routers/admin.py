@@ -1,6 +1,6 @@
 import csv
 import io
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, time
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -205,7 +205,7 @@ def _build_audit_query(
     if from_date:
         filters.append(AuditLog.timestamp >= datetime.combine(from_date, datetime.min.time()))
     if to_date:
-        filters.append(AuditLog.timestamp <= datetime.combine(to_date, datetime.max.time()))
+        filters.append(AuditLog.timestamp <= datetime.combine(to_date, time.max))
     if urgency_tiers:
         filters.append(AuditLog.urgency_tier.in_(urgency_tiers))
     if fallback is not None:
